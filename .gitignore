@@ -52,10 +52,10 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
-# vim
-[._]*.s[a-w][a-z]
-[._]s[a-w][a-z]
-*.un~
-Session.vim
-.netrwhist
-*~
+# vim (disabled, since this should be put in the users global config - not repo!)
+#[._]*.s[a-w][a-z]
+#[._]s[a-w][a-z]
+#*.un~
+#Session.vim
+#.netrwhist
+#*~
