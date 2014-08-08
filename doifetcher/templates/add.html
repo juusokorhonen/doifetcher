@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+{{super()}}
+<script>
+$(document).ready(function() {
+	var maxInputs = 16; 
+	var inputsWrapper = $("#inputWrapper"); // Input boxes' wrapper ID
+	var addButton = $("#addMoreFieldButton"); // Add button ID
+	
+	var x = inputsWrapper.length; // initial text box count
+	var fieldCount=1; // track how many input boxes have been added
+
+	$(addButton).click(function (e) { // on add input button click
+		if (x<=maxInputs) {
+			fieldCount++;
+			$(inputsWrapper).append('<div><input type="text" name="mytext[]" id="field_'+ fieldCount +'" value="Text '+ fieldCount +'"/><a href="#" class="removeclass">&times;</a></div>');
+            x++; 
+		}
+		return false;
+	});
+	$("body").on("click",".removeclass", function(e) {
+		if (x>1) {
+			$(this).parent('div').remove();
+			x--;
+			fieldCount--;
+		}
+	});
+});
+</script>
+{% endblock %}
+
+
+
+{% block content_upper %}
+	<h2>Fill in article details</h2>
+	{{ wtf.quick_form(form, button_map={'submit_button': 'primary'}) }}
+{% endblock %}
+

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+{{super()}}
+<script>
+  $(function(){
+    var a = $('#url').attr('href');
+    $('#textbox').keyup(function(){
+      var b = $('#textbox').val();
+      $('#url').attr('href', a + '/' + b);
+    });
+  });
+</script>
+{% endblock %}
+
+{% block content_upper %}
+	<h2>Input DOI</h2>
+	<p><input id='textbox' type='text' class="form-control"></input>
+	<a class="btn btn-primary" role="button" href="{{url_for('add')}}" id='url'>Fetch DOI</a>
+	<a class="btn btn-default" role="button" href="{{url_for('add')}}">Enter manually</a></p>
+
+{% endblock %}
+
