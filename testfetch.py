@@ -4,7 +4,7 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import requests 
-from citeproc.py2compat import *
+#from citeproc.py2compat import *
 import json
 
 dois = ["10.1126/science.169.3946.635", "10.1007/s12274-012-0282-6", "10.1016/j.susc.2013.06.005"]

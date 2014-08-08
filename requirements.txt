@@ -1,3 +1,9 @@
+Flask
+#flask-rest
+flask-appconfig
+flask-bootstrap
+flask-wtf
+wtforms
 requests
 lxml
-citeproc-py==0.1.0-13-g1f5b
+#citeproc-py==0.1.0-13-g1f5b
