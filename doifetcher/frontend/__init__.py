@@ -1,24 +1,26 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function, unicode_literals)
-from flask import Flask, request, render_template, redirect, flash, url_for
+from flask import Flask, Blueprint, current_app, request, render_template, redirect, flash, url_for
+from jinja2 import TemplateNotFound
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask_wtf import Form
 from wtforms import TextField, TextAreaField, HiddenField, ValidationError, SubmitField, FormField, FieldList, validators
 from wtforms.validators import Required, Optional
 
-from doifetcher import app
 from doifetcher.forms import *
+
+frontend = Blueprint(u'Simple GUI', __name__, template_folder='templates')
 
 def validate_doi(doi):
 	return True # Currently everything goes
 
-@app.route('/')
+@frontend.route('/')
 def welcome_page():
         return render_template('index.html')	
 
-@app.route('/add', methods=['GET', 'POST'])
-@app.route('/add/<path:doi>', methods=['GET', 'POST'])
+@frontend.route('/add', methods=['GET', 'POST'])
+@frontend.route('/add/<path:doi>', methods=['GET', 'POST'])
 def add(doi=None):
         if (request.method == 'POST'): # Save data into DB
                 return u"Saving data into DB"
@@ -30,7 +32,7 @@ def add(doi=None):
                         import requests
                         import json
                         url = "http://dx.doi.org/"
-                        headers = {'Accept': 'application/vnd.citationstyles.csl+json;q=1.0'}
+                        headers = {'Accept': 'frontendlication/vnd.citationstyles.csl+json;q=1.0'}
                         if validate_doi(doi):
                                 form.doi_field.data = doi
                                 req = requests.get("{}{}".format(url,doi), headers=headers)

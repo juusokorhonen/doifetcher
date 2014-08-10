@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from doifetcher import app
+from doifetcher import create_app
+app = create_app(".config.py")
 app.run(debug=True)
