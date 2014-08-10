@@ -15,7 +15,7 @@
 
 	<div class="footer">
 		{% block content_footer %}
-		<p>Aalto Nanomicroscopy Center reference database.</p>
+		<p>{% if config['FOOTER_TEXT'] %}{{ config['FOOTER_TEXT'] }}{% else %}Set footer text with config variable FOOTER_TEXT{% endif %}</p>
 		{% endblock %}
 	</div>
 
