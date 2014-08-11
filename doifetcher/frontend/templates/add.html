@@ -32,8 +32,24 @@ $(document).ready(function() {
 
 
 
-{% block content_upper %}
+{% block contentbody %}
 	<h2>Fill in article details</h2>
-	{{ wtf.quick_form(form, button_map={'submit_button': 'primary'}) }}
+    <form class="form-horizontal" role="form" method="POST" action="{{ url_for('.add') }}">
+        {{ form.hidden_tag() }}
+
+        {% for field in form %}
+        <div class="form-group">
+            {% if field.label == 'doi_field' %}}
+                        
+            {% else %}
+           
+            {% endif %}
+        </div>
+        {{ form.submit() }}
+        {% endfor %}
+
+
+    </form>
+
 {% endblock %}
 

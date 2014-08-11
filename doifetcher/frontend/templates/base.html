@@ -1,29 +1,95 @@
 {% extends "bootstrap/base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
 {% import "bootstrap/fixes.html" as fixes %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}DOIFetcher{% endblock %}
+{% block styles %}
+{{super()}}
+<style>
+body {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+.container-narrow {
+    margin: 0 auto;
+    max-width: 700px;
+}
+.container-narrow > hr {
+    margin: 40px 0 0 0;
+}
+.jumbotron {
+    margin: 5px 0;
+    text-align: center;
+    background-color: white;
+}
+.jumbotron h1 {
+    font-size: 72px;
+    line-height: 1;
+    font-weight: bold;
+}
+.jumbotron .btn {
+    font-size: 21px;
+    padding: 14px 24px;
+}
+.marketing {
+    margin: 40px 0;
+}
+.marketing p + h4 {
+    margin-top: 28px;
+}
+</style>
+{% endblock %}
 
-{% block content %}
-<div class="container">
-	<div class="jumbotron">
-		<h1>DOI Fetcher</h1>
-		{% block content_upper %}
-		<p>Highlighted content</p>
-		{% endblock %}
-	</div>
-
-	<div class="footer">
-		{% block content_footer %}
-		<p>{% if config['FOOTER_TEXT'] %}{{ config['FOOTER_TEXT'] }}{% else %}Set footer text with config variable FOOTER_TEXT{% endif %}</p>
-		{% endblock %}
-	</div>
-
+{% block body %}
+<div class="container-narrow">
+{{ super() }}
 </div>
 {% endblock %}
 
-{% block head %}
-{{super()}}
-{{fixes.ie8()}}
+{% block navbar %}
+    <ul class="nav nav-pills pull-right">
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+    </ul>
+    <h3 class="text-muted">DOIFetcher</h3>
+    <hr />
 {% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1>DOI Fetcher</h1>
+    {% block contentbody %}
+    <p class="lead">Highlighted content</p>
+    <a class="btn btn-large btn-success" href="#">Example button!</a>
+    {% endblock %}
+</div>
+
+<div class="row marketing">
+    {% block marketing %}
+    <div class="col-md-6">
+        <h4>Subheading</h4>
+        <p>Lorem ipsum.</p>
+        <h4>Subheading</h4>
+        <p>Lorem ipsum.</p>
+        <h4>Subheading</h4>
+        <p>Lorem ipsum.</p>
+    </div>
+    <div class="col-md-6">
+        <h4>Subheading</h4>
+        <p>Lorem ipsum.</p>
+        <h4>Subheading</h4>
+        <p>Lorem ipsum.</p>
+        <h4>Subheading</h4>
+        <p>Lorem ipsum.</p>
+    </div>
+    {% endblock %}
+</div>
+
+<div class="footer">
+    {% block footer %}
+    <p>&copy; Company 2014</p>
+    {% endblock %}
+</div>
+{% endblock %}
+
 

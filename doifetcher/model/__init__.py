@@ -49,8 +49,9 @@ class Article(db.Model):
             backref=db.backref('articles', lazy='dynamic'))
     pub_date = db.Column(db.DateTime)
     add_date = db.Column(db.DateTime)
+    json_data = db.Column(db.Text)
 
-    def __init__(self, doi, title, journal, pub_date, add_date=None):
+    def __init__(self, doi, title, journal, pub_date, json_data=None, add_date=None):
         self.doi = doi
         self.title = title
         self.journal = journal
@@ -59,6 +60,7 @@ class Article(db.Model):
             add_date = datetime.utcnow()
         self.add_date = add_date
         self.journal = journal
+        self.json_data = json_data
 
     def __repr__(self):
         return '<Article %r>' % self.doi
