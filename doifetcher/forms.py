@@ -17,5 +17,4 @@ class AddArticleForm(Form):
     pages_field = TextField(u"Pages", validators=[Optional()])
     year_field = TextField(u"Year", validators=[Required()])
     json_field = HiddenField(u"JSON data", validators=[Optional()])
-    submit = SubmitField("Save")
-
+    submit = SubmitField()

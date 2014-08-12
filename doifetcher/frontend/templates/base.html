@@ -4,31 +4,39 @@
 
 {% block styles %}
 {{super()}}
+<link href="http://fonts.googleapis.com/css?family=Alice|Playfair+Display:900" rel="stylesheet" type="text/css" />
 <style>
 body {
     padding-top: 20px;
     padding-bottom: 20px;
+    font-family: 'Alice', serif;
+    font-size: 18px;
+    font-weight: normal;
+    line-height: 23px;
+    margin: 0 0 23px 0;
 }
 .container-narrow {
     margin: 0 auto;
     max-width: 700px;
 }
-.container-narrow > hr {
-    margin: 40px 0 0 0;
-}
 .jumbotron {
     margin: 5px 0;
-    text-align: center;
+    text-align: left;
     background-color: white;
 }
 .jumbotron h1 {
-    font-size: 72px;
-    line-height: 1;
-    font-weight: bold;
+    font-size: 43px;
+    line-height: 46px;
+    font-weight: 900;
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    margin: 0 0 23px 0;
 }
-.jumbotron .btn {
-    font-size: 21px;
-    padding: 14px 24px;
+.jumbotron h2 {
+    font-size: 24px;
+    line-height: 26px;
+    font-family: 'Alice', serif;
+    margin: 0 0 23px 0;
 }
 .marketing {
     margin: 40px 0;
@@ -36,27 +44,46 @@ body {
 .marketing p + h4 {
     margin-top: 28px;
 }
+.breadcrumb .disabled {
+    color: #ddd;
+}
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="container-narrow">
+{% block flashes %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {% if category == 'error' %}
+                    <div class="alert alert-danger">
+                {% else %}
+                    <div class="alert alert-info">
+                {% endif %}
+                        <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        {{ message }}
+                    </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+{% endblock %}
 {{ super() }}
 </div>
 {% endblock %}
 
 {% block navbar %}
-    <ul class="nav nav-pills pull-right">
-        <li class="active"><a href="#">Home</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Contact</a></li>
+    <ul class="breadcrumb">
+        <li class="active"><a href="{{ url_for('.index') }}">Start</a></li>
+        <li class="disabled">Review</li>
+        <li class="disabled">Save</li>
     </ul>
-    <h3 class="text-muted">DOIFetcher</h3>
-    <hr />
 {% endblock %}
 
+
+
 {% block content %}
-<div class="jumbotron">
+<div class="row jumbotron">
     <h1>DOI Fetcher</h1>
     {% block contentbody %}
     <p class="lead">Highlighted content</p>

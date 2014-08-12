@@ -13,10 +13,12 @@ Website implementation uses the following components:
  
 Quick usage:
 1. Install and learn how to use virtualenv and virtualenvwrapper
+ $ sudo easy_install pip
+ $ pip install virtualenv virtualenvwrapper
+ $ mkvirtualenv --no-site-packages doifetcher
+ $ workon doifetcher
 2. Install requirements: 
   $ pip install -r requirements.txt
-2.1 Install citeproc-py from the source
-3. Go to server/
-4. run:
-  $ python server.py
+3. run:
+  $ python runserver.py
 5. Use your browser to go to http://localhost:5000/

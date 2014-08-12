@@ -16,24 +16,23 @@ def validate_doi(doi):
     return True # Currently everything goes
 
 @frontend.route('/')
-def welcome_page():
+def index():
         form = AddArticleForm()
         form.validate_on_submit()
         return render_template('index.html', form=form) 
 
 @frontend.route('/add', methods=['GET', 'POST'])
-@frontend.route('/add/<path:doi>', methods=['GET', 'POST'])
-def add(doi=None):
-        form = AddArticleForm()
+def add():
+        form = AddArticleForm(request.form)
+        doi = form.doi_field.data.strip()
         if (form.validate_on_submit()): # Save data into DB
                 return u"Saving data into DB"
         else: # Showing the add form
-
                 if (doi is not None):
                         import requests
                         import json
                         url = "http://dx.doi.org/"
-                        headers = {'Accept': 'frontendlication/vnd.citationstyles.csl+json;q=1.0'}
+                        headers = {'Accept': 'application/vnd.citationstyles.csl+json;q=1.0'}
                         if validate_doi(doi):
                                 form.doi_field.data = doi
                                 req = requests.get("{}{}".format(url,doi), headers=headers)
@@ -60,6 +59,16 @@ def add(doi=None):
                                                 if (indexed[u'date-parts']):
                                                         form.year_field.data = indexed[u'date-parts'][0][0]
                                 else: # Did not receive a proper response
+                                        if (req.status_code == 204): 
+                                            errormsg = u"No metadata available"
+                                        elif (req.status_code == 404):
+                                            errormsg = u"The requested DOI does not exist"
+                                        elif (req.status_code == 406): 
+                                            errormsg = u"Cannot serve the requested content type"
+                                        else:
+                                            errormsg = u"Unknown status code {}".format(req.status_code)
+                                        flash(u"DOI fetch failed: {}".format(errormsg), 'error')
+
                                         form.doi_field.errors = u'DOI invalid'
                                         form.doi_field.flags.valid = False     
 

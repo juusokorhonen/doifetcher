@@ -30,24 +30,55 @@ $(document).ready(function() {
 </script>
 {% endblock %}
 
-
+{% block navbar %}
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index') }}">Start</a></li>
+        <li>Review</li>
+        <li class="disabled">Save</li>
+    </ul>
+{% endblock %}
 
 {% block contentbody %}
 	<h2>Fill in article details</h2>
     <form class="form-horizontal" role="form" method="POST" action="{{ url_for('.add') }}">
         {{ form.hidden_tag() }}
-
         {% for field in form %}
-        <div class="form-group">
-            {% if field.label == 'doi_field' %}}
-                        
+            {% if field.name == "doi_field" %}
+                <div class="form-group{% if field.flags.valid %} has-success{% else %} has-error{% endif %}">
+                    {{ field.label(class="col-sm-2 control-label") }}
+                    <div class="col-sm-10">
+                    {% if field.flags.valid %}
+                        {{ field(class='form-control', disabled=True) }}
+                    {% else %}
+                        {{ field(class='form-control') }}
+                    {% endif %}
+                    {% if field.errors %}
+                        <p class="text-danger text-right text-uppercase">{{ field.errors }}</p>
+                    {% endif %}
+                    </div>
+                </div>
             {% else %}
-           
+                {% if field.type == "TextField" %}
+                <div class="form-group">
+                    {{ field.label(class="col-sm-2 control-label") }}
+                    <div class="col-sm-10">
+                        {{ field(class='form-control') }}
+                        {% if field.errors %}
+                            <p class="text-warning text-right text-uppercase">{{ field.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                {% endif %}
             {% endif %}
-        </div>
-        {{ form.submit() }}
         {% endfor %}
-
+ 
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+               <button type="submit" name="fetchdoi" class="btn btn-primary">Fetch DOI</button> 
+               <a href="{{ url_for('.index') }}" class="btn btn-default active" role="button">Reset</a>
+            </div>
+        </div>
 
     </form>
 
