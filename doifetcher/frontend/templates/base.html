@@ -47,6 +47,9 @@ body {
 .breadcrumb .disabled {
     color: #ddd;
 }
+.error {
+    font-size: 10px;
+}
 </style>
 {% endblock %}
 
@@ -58,6 +61,8 @@ body {
             {% for category, message in messages %}
                 {% if category == 'error' %}
                     <div class="alert alert-danger">
+                {% elif categoty == 'warning' %}
+                    <div class="alert alert-warning">
                 {% else %}
                     <div class="alert alert-info">
                 {% endif %}

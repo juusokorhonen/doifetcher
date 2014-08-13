@@ -20,8 +20,9 @@
         </div>
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
-               <button type="submit" name="fetchdoi" class="btn btn-primary">Fetch DOI</button> 
-               <button type="submit" name="manualentry" class="btn btn-success">Manual entry</button>
+               <button type="submit" class="btn btn-primary">Fetch DOI</button> 
+               <a href="{{ url_for('.add') }}" class="btn btn-success active" role="button">Manual entry</a>
+
             </div>
         </div>
     </form> 
