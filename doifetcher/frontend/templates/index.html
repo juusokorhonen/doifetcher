@@ -2,8 +2,8 @@
 
 {% block navbar %}
     <ul class="breadcrumb">
-        <li>Start</li>
-        <li class="disabled">Review</li>
+        <li class="active">Start</li>
+        <li><a href="{{ url_for('.add') }}">Add article</a></li>
         <li class="disabled">Save</li>
     </ul>
 {% endblock %}

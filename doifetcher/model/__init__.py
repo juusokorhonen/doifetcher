@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division, print_function, unicode_literals)
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -39,10 +40,14 @@ def populate_example_data(app, db):
         db.session.add(a)
     db.session.commit()
 
+# Helper table for many-to-many relationships
+authors = db.Table('authors',
+            db.Column('author_id', db.Integer, db.ForeignKey('author.id')),
+            db.Column('article_id', db.Integer, db.ForeignKey('article.id')))
 
 class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    doi = db.Column(db.String(1024), unique=True)
+    doi = db.Column(db.String(4096))
     title = db.Column(db.String(4096))
     journal_id = db.Column(db.Integer, db.ForeignKey('journal.id'))
     journal = db.relationship('Journal',
@@ -50,6 +55,8 @@ class Article(db.Model):
     pub_date = db.Column(db.DateTime)
     add_date = db.Column(db.DateTime)
     json_data = db.Column(db.Text)
+    authors = db.relationship('Author', secondary=authors,
+                backref=db.backref('articles', lazy='dynamic'))
 
     def __init__(self, doi, title, journal, pub_date, json_data=None, add_date=None):
         self.doi = doi
@@ -78,3 +85,16 @@ class Journal(db.Model):
 
     def __repr__(self):
         return '<Journal %r>' % self.name
+
+class Author(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    firstname = db.Column(db.String(4096))
+    lastname = db.Column(db.String(4096))
+    
+    def __init__(self, firstname, lastname):
+        self.firstname = firstname
+        self.lastname = lastname
+    
+    def __repr__(self):
+        return u"<Author {}, {}>".format(self.lastname, self.firstname)
+

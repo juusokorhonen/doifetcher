@@ -33,7 +33,7 @@ $(document).ready(function() {
 {% block navbar %}
     <ul class="breadcrumb">
         <li><a href="{{ url_for('.index') }}">Start</a></li>
-        <li>Review</li>
+        <li class="active">Add article</li>
         <li class="disabled">Save</li>
     </ul>
 {% endblock %}
@@ -63,11 +63,11 @@ $(document).ready(function() {
                     {% endif %}
                     </div>
                     <div class="col-sm-2">
-                        <button type="submit" value="fetchdoi" class="btn btn-success">Fetch DOI</button>
+                        <button type="submit" name="fetch_doi" id="fetch_doi" value="Fetch DOI" class="btn btn-success" {% if field.flags.valid %} disabled{% endif %}>Fetch DOI</button>
                     </div>
                 </div>
             {% else %}
-                {% if field.type == "TextField" %}
+                {% if field.type == "StringField" or field.type == "TextAreaField" %}
                 <div class="form-group">
                     {{ field.label(class="col-sm-2 control-label") }}
                     <div class="col-sm-10">
@@ -79,14 +79,33 @@ $(document).ready(function() {
                         {% endif %}
                     </div>
                 </div>
-                {% elif field.type == "SubmitField" %}
+                {% elif field.type == "FieldList" and field.name == "authors_fieldlist" %}
+                    {% set field_counter = 0 %}
+                    {% for subform in field %}
+                    <div class="form-group">
+                        {% if field_counter == 0 %}{{ field.label(class="col-sm-2 control-label") }}{% else %}<div class="col-sm-2">&nbsp;</div>{% endif %}
+                        <div class="col-sm-5">
+                            {{ subform.firstname(class='form-control', placeholder='First name(s)') }}
+                        </div>
+                        <div class="col-sm-5">
+                            {{ subform.lastname(class='form-control', placeholder='Last name') }}
+                        </div>
+                        {% set field_counter = field_counter+1 %}
+                    </div>
+                    {% endfor %}
+                     <div class="form-group">
+                        <div class="col-sm-2">&nbsp;</div>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add</button>
+                        </div>
+                    </div>
                 {% endif %}
             {% endif %}
         {% endfor %}
  
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
-               <button type="submit" value="save" class="btn btn-primary">Save to Database</button> 
+               <button type="submit" id="save" name="save" value="Save" class="btn btn-primary">Save to Database</button> 
                <a href="{{ url_for('.add') }}" class="btn btn-default active" role="button">Reset</a>
             </div>
         </div>
