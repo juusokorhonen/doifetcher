@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index') }}">Start</a></li>
+        <li><a href="{{ url_for('.add') }}">Add article</a></li>
+        <li class="active">Save</li>
+    </ul>
+{% endblock %}
+
+{% block contentbody %}
+    <h2>Article saved to database</h2>
+
+    <a href="{{ url_for('.add') }}" class="btn btn-default active" role="button">Continue</a>
+
+
+{% endblock %}
+
