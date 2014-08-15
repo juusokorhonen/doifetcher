@@ -2,32 +2,22 @@
 
 {% block scripts %}
 {{super()}}
+<script src="{{ url_for('.static', filename='js/jquery-ui.min.js') }}"></script>
+<script src="{{ url_for('.static', filename='js/repeatable-fields.js') }}"></script>
 <script>
-$(document).ready(function() {
-	var maxInputs = 16; 
-	var inputsWrapper = $("#inputWrapper"); // Input boxes' wrapper ID
-	var addButton = $("#addMoreFieldButton"); // Add button ID
-	
-	var x = inputsWrapper.length; // initial text box count
-	var fieldCount=1; // track how many input boxes have been added
-
-	$(addButton).click(function (e) { // on add input button click
-		if (x<=maxInputs) {
-			fieldCount++;
-			$(inputsWrapper).append('<div><input type="text" name="mytext[]" id="field_'+ fieldCount +'" value="Text '+ fieldCount +'"/><a href="#" class="removeclass">&times;</a></div>');
-            x++; 
-		}
-		return false;
-	});
-	$("body").on("click",".removeclass", function(e) {
-		if (x>1) {
-			$(this).parent('div').remove();
-			x--;
-			fieldCount--;
-		}
-	});
+jQuery(function() {
+		jQuery('.repeat').each(function() {
+			jQuery(this).repeatable_fields();
+		});
 });
 </script>
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link href="{{ url_for('.static', filename='css/jquery-ui.min.css') }}" rel="stylesheet" media="screen">
+<link href="{{ url_for('.static', filename='css/jquery-ui.structure.min.css') }}" rel="stylesheet" media="screen">
+<link href="{{ url_for('.static', filename='css/jquery-ui.theme.min.css') }}" rel="stylesheet" media="screen">
 {% endblock %}
 
 {% block navbar %}
@@ -80,9 +70,22 @@ $(document).ready(function() {
                     </div>
                 </div>
                 {% elif field.type == "FieldList" and field.name == "authors_fieldlist" %}
+										<div class="repeat">
+											<div class="wrapper">
+												<div class="form-group">
+													<div class="col-sm-2">&nbsp;</div>
+													<div class="col-sm-5">
+														<input class="form-control" id="authors_fieldlist-\{\{row-count-placeholder\}\}-firstname" name="authors_fieldlist-\{\{row-count-placeholder\}\}-firstname" placeholder="First name(s)" type="text" value="">
+													</div>
+													<div class="col-sm-5">
+														<input class="form-control" id="authors_fieldlist-\{\{row-count-placeholder\}\}-lastname" name="authors_fieldlist-\{\{row-count-placeholder\}\}-lastname" placeholder="Last name" type="text" value="">
+													</div>
+												</div>
+											</div>
+										</div>
                     {% set field_counter = 0 %}
                     {% for subform in field %}
-                    <div class="form-group">
+                    <div class="form-group repeat">
                         {% if field_counter == 0 %}{{ field.label(class="col-sm-2 control-label") }}{% else %}<div class="col-sm-2">&nbsp;</div>{% endif %}
                         <div class="col-sm-5">
                             {{ subform.firstname(class='form-control', placeholder='First name(s)') }}
@@ -99,6 +102,7 @@ $(document).ready(function() {
                             <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add</button>
                         </div>
                     </div>
+
                 {% endif %}
             {% endif %}
         {% endfor %}

@@ -11,11 +11,21 @@ import re
 from doifetcher.forms import *
 from doifetcher.model import *
 
-frontend = Blueprint(u'Simple GUI', __name__, template_folder='templates')
+frontend = Blueprint(u'frontend', __name__, template_folder='templates', static_folder='static', static_url_path='/static/frontend')
 
 def validate_doi(doi):
     doi_validator = re.compile("(^$|(doi:)?10\.\d+(.\d+)*/.*)")
     return doi_validator.match(doi) # Check if doi matches 
+
+def validate_url(url):
+    url_validator = re.compile(
+        r'^(?:http|ftp)s?://' # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+        r'localhost|' #localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+        r'(?::\d+)?' # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE) 
+    return url_validator.match(url)
 
 def fetchDOIData(doi):
     """Takes a doi as an argument and returns a JSON representation of the article."""
@@ -23,8 +33,17 @@ def fetchDOIData(doi):
     doi = doi.strip() # Get rid of whitespace
     
     if not validate_doi(doi):
-        flash("DOI appers to be invalid. Please check your input.", 'warning')
-        return None
+        # Try to parse, if supplied an url insted of doi
+        from urlparse import urlparse
+        parsed_url = urlparse(doi)
+        parsed_doi = parsed_url.path[1:]
+        #print(parsed_doi)
+        if not validate_doi(parsed_doi):
+            flash("DOI appers to be invalid. Please check your input.", 'error')
+            return None
+        else:
+            flash("DOI was supplied in URL form. Tried to correct automatically.", 'warning')
+            doi = parsed_doi
     
     import requests
     import json
@@ -69,6 +88,7 @@ def add():
 
             # Now process the json data into the form
             if (json_data):
+                form.doi_field.data = json_data.get(u'DOI', form.fetch_doi.data) # Update doi or use the provided one
                 form.doi_field.flags.valid = True
                 form.json_field.data = json_data
                 #authors_txt = u""
