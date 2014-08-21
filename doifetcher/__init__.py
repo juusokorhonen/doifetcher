@@ -4,10 +4,18 @@ from flask import Flask, url_for
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 
-def create_app(configfile=None):
+def create_app(config=None, configfile=None):
+    """
+    Creates a Flask app using the provided configuration.
+
+    Keyword arguments:
+    :param config:  Config object or None (default: None)
+    :param configfile: - Name and path to configfile (default: None)
+    :returns: Flask application
+    """
     app = Flask(__name__)
     # Configure app
-    AppConfig(app, configfile) # Use of flask-appconfig is highly recommended
+    AppConfig(app, default_settings=config, configfile=configfile) # Use of flask-appconfig is highly recommended
     Bootstrap(app) # Use flask-bootstrap
     # Import Blueprints
     from doifetcher.frontend import frontend # Use Blueprints

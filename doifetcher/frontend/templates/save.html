@@ -10,6 +10,81 @@
 
 {% block contentbody %}
     <h2>Article saved to database</h2>
+	
+		<dl class="dl-horizontal">
+			<dt>DOI</dt><dd>{{ article.doi }}</dd>
+			<dt>Title</dt><dd>{{ article.title }}</dd>
+			<dt>Authors</dt><dd><a href="#" data-toggle="modal" data-target="#authorsModal">{{ article.authors|count }}</a></dd>
+			<dt>Journal</dt><dd>{{ article.journal.name }}</dd>
+			<dt>DOI fetch data</dt><dd><a href="#" data-toggle="modal" data-target="#extradataModal">Show</a></dd>
+		</dl>
+
+		<div class="modal fade" id="authorsModal" tabindes="-1" role="dialog" aria-labelledby="authorsModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+						<h4 class="modal-title" id="authorsModelLabel">Authors</h4>
+					</div>
+					<div class="modal-body">
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th colspan="2">#</th>
+									<th>First name</th>
+									<th>Middle name(s)</th>
+									<th>Last name</th>
+								</tr>
+							</thead>
+							<tbody>
+						{% for author,new in authors %}
+							<!-- {{ author }} -->
+							<tr>
+									<td>
+										{{ loop.index }}
+									</td>
+									<td>
+										{% if new %}<span class="label label-info">New</span>{% endif %}
+									</td>
+									<td>
+										{{ author.first }}
+									</td>
+									<td>
+										{{ author.middle or ''}}
+									</td>
+									<td>
+										{{ author.last }}
+									</td>
+								</tr>
+						{% endfor %}
+							</tbody>
+						</table>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="extradataModal" tabindes="-1" role="dialog" aria-labelledby="extradataModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+						<h4 class="modal-title" id="extradataModelLabel">DOI fetch data (JSON)</h4>
+					</div>
+					<div class="modal-body">
+						<code class="prettyprint">
+						{{ article.json_data }}		
+						</code>		
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
     <a href="{{ url_for('.add') }}" class="btn btn-default active" role="button">Continue</a>
 

@@ -8,3 +8,4 @@ requests
 lxml
 flask-sqlalchemy
 #citeproc-py==0.1.0-13-g1f5b
+nameparser

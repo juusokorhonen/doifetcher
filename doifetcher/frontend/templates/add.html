@@ -38,7 +38,7 @@ jQuery(function() {
                     {{ field.label(class="col-sm-2 control-label") }}
                     <div class="col-sm-8">
                     {% if field.flags.valid %}
-                        {{ field(class='form-control', disabled=True) }}
+                        {{ field(class='form-control') }}
                         <span class="glyphicon glyphicon-ok form-control-feedback"></span>
                     {% elif field.errors %}
                         {{ field(class='form-control') }}
@@ -70,30 +70,15 @@ jQuery(function() {
                     </div>
                 </div>
                 {% elif field.type == "FieldList" and field.name == "authors_fieldlist" %}
-										<div class="repeat">
-											<div class="wrapper">
-												<div class="form-group">
-													<div class="col-sm-2">&nbsp;</div>
-													<div class="col-sm-5">
-														<input class="form-control" id="authors_fieldlist-\{\{row-count-placeholder\}\}-firstname" name="authors_fieldlist-\{\{row-count-placeholder\}\}-firstname" placeholder="First name(s)" type="text" value="">
-													</div>
-													<div class="col-sm-5">
-														<input class="form-control" id="authors_fieldlist-\{\{row-count-placeholder\}\}-lastname" name="authors_fieldlist-\{\{row-count-placeholder\}\}-lastname" placeholder="Last name" type="text" value="">
-													</div>
-												</div>
-											</div>
-										</div>
-                    {% set field_counter = 0 %}
                     {% for subform in field %}
                     <div class="form-group repeat">
-                        {% if field_counter == 0 %}{{ field.label(class="col-sm-2 control-label") }}{% else %}<div class="col-sm-2">&nbsp;</div>{% endif %}
+                        {% if loop.index == 0 %}{{ field.label(class="col-sm-2 control-label") }}{% else %}<div class="col-sm-2">&nbsp;</div>{% endif %}
                         <div class="col-sm-5">
                             {{ subform.firstname(class='form-control', placeholder='First name(s)') }}
                         </div>
                         <div class="col-sm-5">
                             {{ subform.lastname(class='form-control', placeholder='Last name') }}
                         </div>
-                        {% set field_counter = field_counter+1 %}
                     </div>
                     {% endfor %}
                      <div class="form-group">
