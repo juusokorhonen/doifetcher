@@ -16,6 +16,7 @@ import requests
 import json
 import unicodedata
 import re
+import codecs
 
 simple = Blueprint(u'simple', __name__, template_folder='templates', static_folder='static', static_url_path='/static/simple')
 
@@ -83,6 +84,54 @@ def apply_unicode_tricks(json_data):
     json_str.decode('unicode_escape')
     return json.loads(json_str)
 
+def abbreviate_journal_name(name, reverse=False):
+    abbreviation_dir = u"{}/{}".format(simple.root_path,'journal_abbreviations')
+    abbreviation_filenames = ['journal_abbreviations_general.txt',
+                                'jabref.wos.txt',
+                                'journal_abbreviations_geology_physics.txt',
+                                'journal_abbreviations_ieee.txt',
+                                'journal_abbreviations_ams.txt',
+                                'journal_abbreviations_mechanical.txt',
+                                'journal_abbreviations_meteorology.txt',
+                                'journal_abbreviations_sociology.txt',
+                                'journal_abbreviations_medicus.txt',
+                                'journal_abbreviations_entrez.txt']
+    for filename in abbreviation_filenames: # Try all abbreviation files one by one
+        # This load trick from http://stackoverflow.com/questions/4842057/python-easiest-way-to-ignore-blank-lines-when-reading-a-file
+        # Code borrowed from bibbreviate package by Steven Hamblin (https://github.com/Winawer/bibbreviate)
+        try:
+            abbrevs = filter(None,(line.rstrip() for line in codecs.open(u"{}/{}".format(abbreviation_dir,filename),encoding='utf-8')))
+        except:
+            print(u"Could not open file: {}".format(filename))
+            continue # If we could not open the file, then continue
+        abbrevs = [ line.split('=') for line in abbrevs if line[0] != u"#" ]
+        try:
+            abbrevs = [ [line[0].strip(),line[1].strip()] for line in abbrevs ]
+        except:
+            print(u"Parsing file {} failed due to index of of bounds.".format(filename))
+            print(u"Parsed line was: {}".format(line))
+            continue
+        if not reverse:
+            abbrevs = { line[0].strip().lower():line[1].strip() for line in abbrevs}
+        else:
+            abbrevs = { line[1].strip().lower():line[0].strip() for line in abbrevs}
+        # Now we have abbreviations in abbrevs list
+        if len(name.split(' ')) > 1: # This means that the journal name has more than one part (ie. it's not "Nature")
+            journal = name.lower()
+            # Handle any difficult characters. TODO: check that this list is complete.
+            journal_clean = re.sub('[{}]','',journal)
+            try:
+                abbreviation = abbrevs[journal_clean]
+                # If KeyError has not occurred then we found an abbreviation!
+                return abbreviation # We can now exit!
+            except KeyError:
+                pass
+                # Did not find an abbreviation so move on to the next file
+        else: # No need to abbreviate!
+            return name
+    # We got to the end and no abbreviations were found...so return None
+    return None 
+
 @simple.route('/add', methods=['GET', 'POST'])
 def add():
     form = AddArticleForm()
@@ -118,7 +167,6 @@ def add():
 
         elif (form.save.data): # Save article to database
             if (form.validate()): # If form validates, save it        
-                print(form)
                 # Process authors
                 authors = []
                 while (len(form.authors_fieldlist) > 0):
@@ -148,6 +196,16 @@ def add():
                 if journal is None:
                     # TODO: fetch journal abbreviation using ie. bibtexparser library
                     journal = Journal(name=journal_input)
+                    abbrev = abbreviate_journal_name(journal_input)
+                    if abbrev is not None:
+                        journal.abbreviation = abbrev
+                    else:
+                        # Abbreviation turned out None, which could mean that it is not in the database or that the provided journal name is already an
+                        # abbreviation! We test this by running the process in reverse.
+                        fullname = abbreviate_journal_name(journal_input, reverse=True)
+                        if fullname is not None:
+                            journal.name = fullname
+                            journal.abbreviation = journal_input
                     db.session.add(journal)
                 # journal now contains the journal for this article and the possibly new journal has been added to the database (waiting for db.session.commit)
 
@@ -182,9 +240,17 @@ def add():
                     issued = json_data.get(u'issued')
                     date_data = issued.get(u'date-parts') 
                     if (date_data):
-                        json_year = date_data[0][0]
-                        json_month = date_data[0][1]
-                        json_day = date_data[0][2]
+                        try:
+                            json_year = date_data[0][0]
+                            json_month = date_data[0][1]
+                            json_day = date_data[0][2]
+                        except IndexError:
+                            if not 'json_year' in locals():
+                                json_year = year
+                            if not 'json_month' in locals():
+                                json_month = 1
+                            if not 'json_day' in locals():
+                                json_day = 1
                         if (int(json_year) == int(year)):
                             pub_date = datetime(int(json_year), int(json_month), int(json_day))
                         else:
