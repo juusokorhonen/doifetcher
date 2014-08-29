@@ -1,22 +1,19 @@
 {% extends "base.html" %}
 
-{% block navbar %}
-    <ul class="breadcrumb">
-        <li><a href="{{ url_for('.index') }}">Start</a></li>
-        <li><a href="{{ url_for('.add') }}">Add article</a></li>
-        <li class="active">Save</li>
-    </ul>
-{% endblock %}
-
 {% block contentbody %}
     <h2>Article saved to database</h2>
 	
 		<dl class="dl-horizontal">
-			<dt>DOI</dt><dd>{{ article.doi }}</dd>
-			<dt>Title</dt><dd>{{ article.title }}</dd>
-			<dt>Authors</dt><dd><a href="#" data-toggle="modal" data-target="#authorsModal">{{ article.authors|count }}</a></dd>
-			<dt>Journal</dt><dd>{{ article.journal.name }}</dd>
-			<dt>DOI fetch data</dt><dd><a href="#" data-toggle="modal" data-target="#extradataModal">Show</a></dd>
+			<dt>DOI</dt><dd>{{ article.doi|sn }}</dd>
+			<dt>Title</dt><dd>{{ article.title|sn }}</dd>
+			<dt>Authors</dt><dd><a href="#" data-toggle="modal" data-target="#authorsModal">{{ article.authors|count|sn }}</a></dd>
+			<dt>Journal</dt><dd>{{ article.journal.name|sn }}</dd>
+			<dt>DOI fetch data</dt><dd>
+				{% if article.json_data %}
+					<a href="#" data-toggle="modal" data-target="#extradataModal">Show</a>
+				{% else %}
+					-
+				{% endif %}</dd>
 		</dl>
 
 		<div class="modal fade" id="authorsModal" tabindes="-1" role="dialog" aria-labelledby="authorsModalLabel" aria-hidden="true">
@@ -75,9 +72,7 @@
 						<h4 class="modal-title" id="extradataModelLabel">DOI fetch data (JSON)</h4>
 					</div>
 					<div class="modal-body">
-						<code class="prettyprint">
-						{{ article.json_data }}		
-						</code>		
+						<pre class="pre-scrollable small">{{ article.json_data|prettyjson }}</pre>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

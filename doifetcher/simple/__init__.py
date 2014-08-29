@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function, unicode_literals)
-from flask import Flask, Blueprint, current_app, request, render_template, redirect, flash, url_for
+from flask import Flask, Blueprint, current_app, request, render_template, redirect, flash, url_for, abort
 from jinja2 import TemplateNotFound
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
@@ -12,9 +12,12 @@ from doifetcher.forms import *
 from doifetcher.model import *
 import doifetcher.model as model
 from datetime import datetime
+import requests
 import json
+import unicodedata
+import re
 
-frontend = Blueprint(u'frontend', __name__, template_folder='templates', static_folder='static', static_url_path='/static/frontend')
+simple = Blueprint(u'simple', __name__, template_folder='templates', static_folder='static', static_url_path='/static/simple')
 
 def validate_doi(doi):
     doi_validator = re.compile("(^$|(doi:)?10\.\d+(.\d+)*/.*)")
@@ -48,8 +51,6 @@ def fetchDOIData(doi):
             flash("DOI was supplied in URL form. Tried to correct automatically.", 'warning')
             doi = parsed_doi
     
-    import requests
-    import json
     url = "http://dx.doi.org/"
     headers = {'Accept': 'application/vnd.citationstyles.csl+json;q=1.0'}
     req = requests.get("{}{}".format(url,doi), headers=headers)
@@ -77,18 +78,19 @@ def fetchDOIData(doi):
     
     return json_data
 
-@frontend.route('/')
-def index():
-        form = AddArticleForm()
-        return render_template('index.html', form=form) 
+def apply_unicode_tricks(json_data):
+    json_str = json.dumps(json_data)
+    json_str.decode('unicode_escape')
+    return json.loads(json_str)
 
-@frontend.route('/add', methods=['GET', 'POST'])
+@simple.route('/add', methods=['GET', 'POST'])
 def add():
     form = AddArticleForm()
 
     if (request.method == 'POST'): # Requested to save the form
         if (form.fetch_doi.data): # Fetch DOI
             json_data = fetchDOIData(form.doi_field.data)
+            json_data = apply_unicode_tricks(json_data)
 
             # Now process the json data into the form
             if (json_data):
@@ -116,6 +118,7 @@ def add():
 
         elif (form.save.data): # Save article to database
             if (form.validate()): # If form validates, save it        
+                print(form)
                 # Process authors
                 authors = []
                 while (len(form.authors_fieldlist) > 0):
@@ -123,7 +126,7 @@ def add():
                     author_form = form.authors_fieldlist.pop_entry()
                     author_data = {'firstname': author_form.firstname.data, 'lastname': author_form.lastname.data}
                     hn = HumanName(u"{}, {}".format(author_data[u'lastname'], author_data[u'firstname'])) # HumanName parses names from strings, thus combine the already separated last and first names
-                    author = Author(**hn.as_dict(False))
+                    author = Author(**hn.as_dict(True))
                     possible_matches = Author.query.filter_by(last=author.last, first=author.first)
                     found_match = None
                     for possible_match in possible_matches:
@@ -159,9 +162,12 @@ def add():
                 json_data = form.json_field.data
 
                 # Make some fields None if they are empty
-                for field in [doi, title, volume, pages, year, json_data]:
-                    if field == u"":
-                        field = None
+                doi = doi if doi != u"" else None
+                title = title if title != u"" else None
+                volume = volume if volume != u"" else None
+                pages = pages if pages != u"" else None
+                year = year if year != u"" else None
+                json_data = json_data if json_data != u"" else None
 
                 # Check whether the doi already exists in the database
                 if doi is not None:
@@ -185,7 +191,10 @@ def add():
                             # ie. the user has modified the year input, now use a default of Jan 1st
                             pub_date = datetime(int(year), 1, 1)
                 else:
-                    pub_date = datetime(year, 1, 1)
+                    try:
+                        pub_date = datetime(int(year), 1, 1)
+                    except:
+                        pub_date = None 
 
 
                 # If not then add
@@ -199,12 +208,13 @@ def add():
                             pub_date=pub_date,
                             add_date=add_date,
                             journal=journal,
-                            authors=[author for (author,new) in authors], # author contains tuples of the form: (author, new)
-                            json_data=json.dumps(json_data))
+                            authors=[author for (author,new) in authors]) # author contains tuples of the form: (author, new)
+                    if json_data:
+                        article.json_data=json.dumps(json_data)
 
                     db.session.add(article)
                 else: # Article found in database
-                    flash(u"Article already in database, updating fields", 'info')
+                    #flash(u"Article already in database, updating fields", 'info')
                     updatemsg = u""
                     
                     if (article.doi != doi):
@@ -237,25 +247,26 @@ def add():
                         updatemsg += u"journal: {} --> {}".format(article.journal.name, journal.name)
                         article.journal = journal
                     
+                    newauthors = [author for (author, new) in authors if new]
+                    allauthors = [author for (author, new) in authors]
                     authorsmsg = u""
                     for author in article.authors:
                         # Remove obsoleted authors
-                        if author not in authors:
-                            if authormsg != u"": authorsmsg += u", " # Add a comma to the list
-                            authorsmsg += "- {}".format(author.name)
-                    for author in authors:
+                        if author not in allauthors:
+                            if authorsmsg != u"": authorsmsg += u", " # Add a comma to the list
+                            authorsmsg += "- {}".format(author.name())
+                    for author in newauthors:
                         # Insert new authors
-                        if author not in article.authors:
-                            if authormsg != u"": authorsmsg += u", " # Add a comma to the list
-                            authorsmsg += "+ {}".format(author.name)
-                    article.authors = authors 
+                        if authorsmsg != u"": authorsmsg += u", " # Add a comma to the list
+                        authorsmsg += u"+ {}".format(author.name())
+                    article.authors = allauthors
 
                     if authorsmsg != u"":
                         if (updatemsg != u""): updatemsg += u", " # Add a comma
                         updatemsg += u"authors modified: {}".format(authorsmsg)
                     
                     if (article.json_data != json.dumps(json_data)):
-                        if (updatensg != u""): updatemsg += u", " # Add a comma
+                        if (updatemsg != u""): updatemsg += u", " # Add a comma
                         if article.json_data is None:
                             updatemsg += u"json data modified"
                             article.json_data = json.dumps(json_data)
@@ -267,9 +278,9 @@ def add():
 
                     if (updatemsg == u""): 
                         # No fields updated
-                        flash(u"Article already in database; no fields updated", 'info')
+                        flash(u"Article already in database.\nNo fields updated", 'info')
                     else:
-                        flash(u"Article already in database; updated fields: {}".format(updatemsg), 'info')
+                        flash(u"Article already in database.\nUpdated fields: {}".format(updatemsg), 'info')
                 
                 # Commit everything
                 db.session.commit()

@@ -104,3 +104,8 @@ class Author(db.Model):
         if equal is NotImplemented:
             return NotImplemented
         return not equal
+
+    def name(self):
+        if (self.middle):
+            return u"{}, {} {}".format(self.last, self.first, self.middle)
+        return u"{}, {}".format(self.last, self.first)

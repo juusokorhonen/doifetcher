@@ -2,13 +2,26 @@
 
 {% block scripts %}
 {{super()}}
-<script src="{{ url_for('.static', filename='js/jquery-ui.min.js') }}"></script>
 <script src="{{ url_for('.static', filename='js/repeatable-fields.js') }}"></script>
-<script>
+<script type="text/javascript">
 jQuery(function() {
-		jQuery('.repeat').each(function() {
-			jQuery(this).repeatable_fields();
-		});
+	jQuery('.f-repeat').each(function() {
+		jQuery(this).repeatable_fields({
+			wrapper: '.f-wrapper',
+			container: '.f-container',
+	 		row: '.f-row',
+			cell: 'div',
+			template: '.f-template',
+			add: '.f-add',
+			remove: '.f-remove',
+			});
+	});
+});
+</script>
+<script type="text/javascript">
+$('#doi_field').change(function() {
+	$('#doi_field').siblings('span').remove();
+	$('#doi_field').parent().parent().removeClass('has-success has-error has-feedback');
 });
 </script>
 {% endblock %}
@@ -20,13 +33,6 @@ jQuery(function() {
 <link href="{{ url_for('.static', filename='css/jquery-ui.theme.min.css') }}" rel="stylesheet" media="screen">
 {% endblock %}
 
-{% block navbar %}
-    <ul class="breadcrumb">
-        <li><a href="{{ url_for('.index') }}">Start</a></li>
-        <li class="active">Add article</li>
-        <li class="disabled">Save</li>
-    </ul>
-{% endblock %}
 
 {% block contentbody %}
 	<h2>Fill in article details</h2>
@@ -70,24 +76,50 @@ jQuery(function() {
                     </div>
                 </div>
                 {% elif field.type == "FieldList" and field.name == "authors_fieldlist" %}
-                    {% for subform in field %}
-                    <div class="form-group repeat">
-                        {% if loop.index == 0 %}{{ field.label(class="col-sm-2 control-label") }}{% else %}<div class="col-sm-2">&nbsp;</div>{% endif %}
-                        <div class="col-sm-5">
-                            {{ subform.firstname(class='form-control', placeholder='First name(s)') }}
-                        </div>
-                        <div class="col-sm-5">
-                            {{ subform.lastname(class='form-control', placeholder='Last name') }}
-                        </div>
-                    </div>
-                    {% endfor %}
-                     <div class="form-group">
-                        <div class="col-sm-2">&nbsp;</div>
-                        <div class="col-sm-10">
-                            <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add</button>
-                        </div>
-                    </div>
-
+								<div class="f-repeat">
+									<div class="f-wrapper">
+										<div class="f-container">
+											<div class="f-template f-row form-group">
+												<div class="col-sm-2">&nbsp;</div>
+												<div class="col-sm-4">
+													{% raw %}<input class="form-control" id="authors_fieldlist-{{row-count-placeholder}}-firstname" name="authors_fieldlist-{{row-count-placeholder}}-firstname" placeholder="First name(s)" type="text" value="">{% endraw %}
+												</div>
+												<div class="col-sm-4">
+													{% raw %}<input class="form-control" id="authors_fieldlist-{{row-count-placeholder}}-lastname" name="authors_fieldlist-{{row-count-placeholder}}-lastname" placeholder="Last name" type="text" value="">{% endraw %}
+												</div>
+												<div class="col-sm-2">
+													<button type="button" class="f-remove btn btn-danger"><span class="glyphicon glyphicon-minus"></span> Delete</button>
+												</div>
+											</div><!-- f_template f_row -->
+											{% for subform in field %}
+												<div class="f-row form-group">
+													{% if loop.index == 1 %}{{ field.label(class="col-sm-2 control-label") }}{% else %}<div class="col-sm-2">&nbsp;</div>{% endif %}
+													<div class="col-sm-4">
+															{{ subform.firstname(class='form-control', placeholder='First name(s)') }}
+															{% for error in subform.firstname.errors %}
+																<p class="text-warning text-right text-uppercase error">{{ error }}</p>
+															{% endfor %}
+													</div>
+													<div class="col-sm-4">
+															{{ subform.lastname(class='form-control', placeholder='Last name') }}
+															{% for error in subform.lastname.errors %}
+																<p class="text-warning text-right text-uppercase error">{{ error }}</p>
+															{% endfor %}
+													</div>
+													<div class="col-sm-2">
+															<button type="button" class="f-remove btn btn-danger"><span class="glyphicon glyphicon-minus"></span> Delete</button>
+													</div>
+												</div>
+											{% endfor %}
+										</div><!-- f_container -->
+										<div class="form-group">
+											<div class="col-sm-2">&nbsp;</div>
+											<div class="col-sm-10">
+												<button type="button" class="f-add btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add</button>
+											</div>
+										</div>
+									</div><!-- f-wrapper -->
+								</div><!-- f-repeat -->
                 {% endif %}
             {% endif %}
         {% endfor %}

@@ -60,6 +60,20 @@ table > caption {
 </style>
 {% endblock %}
 
+{% block scripts %}
+{{super()}}
+<script>
+var url = window.location;
+// Will only work if string in href matches with location
+$('ul.nav a[href="'+ url +'"]').parent().addClass('active');
+
+// Will also work for relative and absolute hrefs
+$('ul.nav a').filter(function() {
+    return this.href == url;
+}).parent().addClass('active');
+</script>
+{% endblock %}
+
 {% block body %}
 <div class="container-narrow">
 {% block flashes %}
@@ -85,10 +99,12 @@ table > caption {
 {% endblock %}
 
 {% block navbar %}
-    <ul class="breadcrumb">
-        <li class="active"><a href="{{ url_for('.index') }}">Start</a></li>
-        <li class="disabled">Review</li>
-        <li class="disabled">Save</li>
+    <ul class="nav nav-tabs nav-justified" role="tablist">
+        <li><a href="{{ url_for('welcome_page') }}">Start</a></li>
+				<li><a href="{{ url_for('simple.add') }}">Add one</a></li>
+				<li><a href="{{ url_for('batch.batch_import') }}">Batch import</a></li>
+				<li><a href="{{ url_for('browse.browse_articles') }}">Browse database</a></li>
+				<li><a href="{{ url_for('export.export_data') }}">Export</a></li>
     </ul>
 {% endblock %}
 
