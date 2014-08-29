@@ -176,6 +176,7 @@ def add():
                     hn = HumanName(u"{}, {}".format(author_data[u'lastname'], author_data[u'firstname'])) # HumanName parses names from strings, thus combine the already separated last and first names
                     author = Author(**hn.as_dict(True))
                     possible_matches = Author.query.filter_by(last=author.last, first=author.first)
+                    # TODO: If author only provides initials, then try to match those
                     found_match = None
                     for possible_match in possible_matches:
                         if (author == possible_match):
