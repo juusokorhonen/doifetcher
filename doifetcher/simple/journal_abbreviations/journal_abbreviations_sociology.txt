@@ -9,7 +9,6 @@
 ##         They are the JRC abbrev.
 ##
 #############################################################################
-
 Acta Sociologica = Acta Sociol.
 Agriculture And Human Values = Agric. Human Values
 American Journal Of Economics And Sociology = Am. J. Econ. Sociol.
@@ -104,4 +103,3 @@ Work And Occupations = Work Occup.
 Work Employment And Society = Work Employ. Soc.
 Youth & Society = Youth Soc.
 Zeitschrift für Soziologie = Z. Soziol.
-

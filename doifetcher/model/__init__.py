@@ -57,6 +57,7 @@ class Article(db.Model):
     pages = db.Column(db.String(4096))
     pub_date = db.Column(db.DateTime)
     add_date = db.Column(db.DateTime)
+    mod_date = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.current_timestamp())
     json_data = db.Column(db.Text)
     authors = db.relationship('Author', secondary=article_to_author,
             backref=db.backref('articles', lazy='dynamic'))

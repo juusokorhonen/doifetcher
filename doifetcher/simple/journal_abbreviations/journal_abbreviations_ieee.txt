@@ -1,5 +1,3 @@
-#Content is based on IEEEfull.bib and IEEEabrv.bib as of 2007-02-14
-#A recent list of abbreviations is available at http://www.ieee.org/publications_standards/publications/authors/authors_journals.html
 Communications Surveys and Tutorials = Commun. Surveys Tuts.
 Internet Computing = Internet Comput.
 Journal of Display Technology = J. Display Technol.

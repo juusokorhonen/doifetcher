@@ -2,6 +2,14 @@
 {% import "bootstrap/fixes.html" as fixes %}
 {% import "bootstrap/wtf.html" as wtf %}
 
+{% block metas %}
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+{{super()}}
+{% endblock %}
+
+{% block title %}DOIFetcher{% endblock %}
+
 {% block styles %}
 {{super()}}
 <link href="http://fonts.googleapis.com/css?family=Alice|Playfair+Display:900" rel="stylesheet" type="text/css" />
@@ -123,7 +131,7 @@ $('ul.nav a').filter(function() {
     {% block marketing %}
     <div class="col-md-6">
         <h4>Subheading</h4>
-        <p>Lorem ipsum.</p>
+        <p>Lorem ipsum.öäÅ•</p>
         <h4>Subheading</h4>
         <p>Lorem ipsum.</p>
         <h4>Subheading</h4>

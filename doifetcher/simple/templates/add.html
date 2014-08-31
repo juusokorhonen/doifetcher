@@ -37,24 +37,24 @@ $('#doi_field').change(function() {
 {% block contentbody %}
 	<h2>Fill in article details</h2>
     <form class="form-horizontal" role="form" method="POST" action="{{ url_for('.add') }}">
-        {{ form.hidden_tag() }}
+        {{ form.hidden_tag()|safe }}
         {% for field in form %}
             {% if field.name == "doi_field" %}
                 <div class="form-group{% if field.flags.valid %} has-success has-feedback{% elif field.errors %} has-error has-feedback{% endif %}">
                     {{ field.label(class="col-sm-2 control-label") }}
                     <div class="col-sm-8">
                     {% if field.flags.valid %}
-                        {{ field(class='form-control') }}
+                        {{ field(class='form-control')|safe }}
                         <span class="glyphicon glyphicon-ok form-control-feedback"></span>
                     {% elif field.errors %}
-                        {{ field(class='form-control') }}
+                        {{ field(class='form-control')|safe }}
                         <span class="glyphicon glyphicon-remove form-control-feedback"></span>
                     {% else %}
-                        {{ field(class='form-control') }}
+                        {{ field(class='form-control')|safe }}
                     {% endif %}
                     {% if field.errors %}
                         {% for error in field.errors %}
-                            <p class="text-danger text-right text-uppercase error">{{ error }}</p>
+                            <p class="text-danger text-right text-uppercase error">{{ error|safe }}</p>
                         {% endfor %}
                     {% endif %}
                     </div>
@@ -65,26 +65,45 @@ $('#doi_field').change(function() {
             {% else %}
                 {% if field.type == "StringField" or field.type == "TextAreaField" %}
                 <div class="form-group">
-                    {{ field.label(class="col-sm-2 control-label") }}
+                    {{ field.label(class="col-sm-2 control-label")|safe }}
                     <div class="col-sm-10">
-                        {{ field(class='form-control') }}
+                        {{ field(class='form-control')|safe }}
                         {% if field.errors %}
                             {% for error in field.errors %}
-                                <p class="text-warning text-right text-uppercase error">{{ error }}</p>
+                                <p class="text-warning text-right text-uppercase error">{{ error|safe }}</p>
                             {% endfor %}
                         {% endif %}
                     </div>
                 </div>
+								{% elif field.type == "FormField" and field.name == "journal_field" %}
+								<div class="form-group">
+									{{ field.journalname.label(class="col-sm-2 control-label")|safe }}
+									<div class="col-sm-6">
+										{{ field.journalname(class='form-control')|safe }}
+										{% for error in field.journalname.errors %}
+											<p class="text-warning text-right text-uppercase error">{{ error|safe }}</p>
+										{% endfor %}
+									</div>
+									<div class="col-sm-4">
+										{{ field.abbrev(class='form-control', placeholder='abbreviation (optional)')|safe }}
+										{% for error in field.abbrev.errors %}
+											<p class="text-warning text-right text-uppercase error">{{ error|safe }}</p>
+										{% endfor %}
+									</div>
+								</div>
                 {% elif field.type == "FieldList" and field.name == "authors_fieldlist" %}
 								<div class="f-repeat">
 									<div class="f-wrapper">
 										<div class="f-container">
 											<div class="f-template f-row form-group">
 												<div class="col-sm-2">&nbsp;</div>
-												<div class="col-sm-4">
-													{% raw %}<input class="form-control" id="authors_fieldlist-{{row-count-placeholder}}-firstname" name="authors_fieldlist-{{row-count-placeholder}}-firstname" placeholder="First name(s)" type="text" value="">{% endraw %}
+												<div class="col-sm-3">
+													{% raw %}<input class="form-control" id="authors_fieldlist-{{row-count-placeholder}}-firstname" name="authors_fieldlist-{{row-count-placeholder}}-firstname" placeholder="First name" type="text" value="">{% endraw %}
 												</div>
-												<div class="col-sm-4">
+												<div class="col-sm-2">
+													{% raw %}<input class="form-control" id="authors_fieldlist-{{row-count-placeholder}}-middlename" name="authors_fieldlist-{{row-count-placeholder}}-middlename" type="text" value="">{% endraw %}
+												</div>
+												<div class="col-sm-3">
 													{% raw %}<input class="form-control" id="authors_fieldlist-{{row-count-placeholder}}-lastname" name="authors_fieldlist-{{row-count-placeholder}}-lastname" placeholder="Last name" type="text" value="">{% endraw %}
 												</div>
 												<div class="col-sm-2">
@@ -93,17 +112,23 @@ $('#doi_field').change(function() {
 											</div><!-- f_template f_row -->
 											{% for subform in field %}
 												<div class="f-row form-group">
-													{% if loop.index == 1 %}{{ field.label(class="col-sm-2 control-label") }}{% else %}<div class="col-sm-2">&nbsp;</div>{% endif %}
-													<div class="col-sm-4">
-															{{ subform.firstname(class='form-control', placeholder='First name(s)') }}
+													{% if loop.index == 1 %}{{ field.label(class="col-sm-2 control-label")|safe }}{% else %}<div class="col-sm-2">&nbsp;</div>{% endif %}
+													<div class="col-sm-3">
+															{{ subform.firstname(class='form-control', placeholder='First name')|safe }}
 															{% for error in subform.firstname.errors %}
-																<p class="text-warning text-right text-uppercase error">{{ error }}</p>
+																<p class="text-warning text-right text-uppercase error">{{ error|safe }}</p>
 															{% endfor %}
 													</div>
-													<div class="col-sm-4">
-															{{ subform.lastname(class='form-control', placeholder='Last name') }}
+													<div class="col-sm-2">
+															{{ subform.middlename(class='form-control')|safe }}
+															{% for error in subform.middlename.errors %}
+																<p class="text-warning text-right text-uppercase error">{{ error|safe }}</p>
+															{% endfor %}
+													</div>
+													<div class="col-sm-3">
+															{{ subform.lastname(class='form-control', placeholder='Last name')|safe }}
 															{% for error in subform.lastname.errors %}
-																<p class="text-warning text-right text-uppercase error">{{ error }}</p>
+																<p class="text-warning text-right text-uppercase error">{{ error|safe }}</p>
 															{% endfor %}
 													</div>
 													<div class="col-sm-2">

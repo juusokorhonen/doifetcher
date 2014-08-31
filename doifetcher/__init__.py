@@ -3,6 +3,7 @@ from __future__ import (absolute_import, division, print_function, unicode_liter
 from flask import Flask, url_for, render_template, abort
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
+from flask_wtf.csrf import CsrfProtect
 from jinja2 import TemplateNotFound
 from doifetcher.forms import AddArticleForm
 import json
@@ -21,6 +22,8 @@ def create_app(config=None, configfile=None):
     # Configure app
     AppConfig(app, default_settings=config, configfile=configfile) # Use of flask-appconfig is highly recommended
     Bootstrap(app) # Use flask-bootstrap
+    # Enable CSRF protection (not really sure if this is needed or not - it's needed for views without forms)
+    CsrfProtect(app)
     # Import Blueprints
     from doifetcher.simple import simple # Use Blueprints
     app.register_blueprint(simple) # register Frontend blueprint

@@ -17,6 +17,8 @@ import json
 import unicodedata
 import re
 import codecs
+from nameparser import HumanName
+import chardet
 
 simple = Blueprint(u'simple', __name__, template_folder='templates', static_folder='static', static_url_path='/static/simple')
 
@@ -68,23 +70,39 @@ def fetchDOIData(doi):
             errormsg = u"Unknown status code {}".format(req.status_code)
         flash(u"DOI fetch failed: {}".format(errormsg), 'warning')
         return None
-    
+    #print("Encoding: {}".format(req.encoding))
+    #req.encoding = 'utf-8'
+    #print("Encoding: {}".format(req.encoding))
+    #print("Content (type: {}): {}".format(type(req.content), req.content))
+
     # Request ok, so process json
     try: 
-        json_data = req.json()
-        #json_data = json.dumps(req.data)
+        #print(u"Text (type {}): {}".format(type(req.text), req.text))
+        unicodestr = apply_unicode_tricks(req.text)
+        #print(u"Unicode text (type {}): {}".format(type(unicodestr), unicodestr))
+        json_data = json.loads(unicodestr, encoding='utf-8')
     except ValueError, ve:
         flash("Something went wrong: Parsing article data failed.", 'warning')
         return None
     
     return json_data
 
-def apply_unicode_tricks(json_data):
-    json_str = json.dumps(json_data)
-    json_str.decode('unicode_escape')
-    return json.loads(json_str)
+def apply_unicode_tricks(rawstr):
+    """Returns an unicode representation of the rawdata."""
+    try:
+        unicodestr = unicode(rawstr)
+    except TypeError:
+        # We already had unicode
+        unicodestr = rawstr 
+    # Now convert to utf-8
+    #unicodestr = unicodedata.normalize(u'NFKD', unicodestr)
+    #unicodestr = unicodestr.decode('utf-8')
+    return unicodestr
 
 def abbreviate_journal_name(name, reverse=False):
+    """Returns the abbreviation of the provided journal name.
+       Reverse option allows to find the full name based on abbreviation.
+       Return None if no match was found."""
     abbreviation_dir = u"{}/{}".format(simple.root_path,'journal_abbreviations')
     abbreviation_filenames = ['journal_abbreviations_general.txt',
                                 'jabref.wos.txt',
@@ -132,6 +150,23 @@ def abbreviate_journal_name(name, reverse=False):
     # We got to the end and no abbreviations were found...so return None
     return None 
 
+def expand_journal_name(name):
+    """Takes a journal name (or abbreviation) as input and returns a tuple, where
+       the first field is the full name and second is the possible abbreviation.
+       Also tries to autodetect, if actually an abbreviation was supplied and acts
+       accordingly. The abbreviation is null if no match was found."""
+    abbrev = abbreviate_journal_name(name)
+    if abbrev is not None:
+        return (name, abbrev)
+    else:
+        # Abbreviation turned out None, which could mean that it is not in the database or that the provided journal name is already an
+        # abbreviation! We test this by running the process in reverse.
+        fullname = abbreviate_journal_name(name, reverse=True)
+        if fullname is not None:
+            return (fullname, name)
+    # Abbreviation failed
+    return (name, None)
+
 @simple.route('/add', methods=['GET', 'POST'])
 def add():
     form = AddArticleForm()
@@ -139,13 +174,13 @@ def add():
     if (request.method == 'POST'): # Requested to save the form
         if (form.fetch_doi.data): # Fetch DOI
             json_data = fetchDOIData(form.doi_field.data)
-            json_data = apply_unicode_tricks(json_data)
 
             # Now process the json data into the form
             if (json_data):
+                # Process the json data
                 form.doi_field.data = json_data.get(u'DOI', form.fetch_doi.data) # Update doi or use the provided one
                 form.doi_field.flags.valid = True
-                form.json_field.data = json.dumps(json_data)
+                form.json_field.data = json.dumps(json_data, encoding='utf-8')
                 #authors_txt = u""
                 # Empty the authors fieldlist
                 while (len(form.authors_fieldlist) > 0):
@@ -153,16 +188,23 @@ def add():
                 for author in json_data.get(u'author'):
                     if (author.get(u'family') and author.get(u'given')):
                         #authors_txt += u"{last}, {firsts}\n".format(last=author[u'family'], firsts=author[u'given'])
-                        form.authors_fieldlist.append_entry({'firstname':author[u'given'],'lastname':author[u'family']})
-                #form.authors_field.data = authors_txt
-                form.journal_field.data = json_data.get(u'container-title')
+                        author_hn = HumanName(u"{}, {}".format(author[u'family'], author[u'given']))
+                        form.authors_fieldlist.append_entry({u'firstname':author_hn.first,u'middlename':author_hn.middle,u'lastname':unicode(author_hn.last)})
+                # Work out the journal name and abbreviation from the json data
+                (journal_fullname, journal_abbrev) = expand_journal_name(json_data.get(u'container-title'))
+                form.journal_field.journalname.data = journal_fullname 
+                if journal_abbrev is not None:
+                    form.journal_field.abbrev.data = journal_abbrev
+                # Work out title, volume, pages
                 form.title_field.data = json_data.get(u'title')
                 form.volume_field.data = json_data.get(u'volume')                   
                 form.pages_field.data = json_data.get(u'page')
+                # Work out the publication year
                 issued = json_data.get(u'issued')
                 date_data = issued.get(u'date-parts') 
                 if (date_data):
                     form.year_field.data = date_data[0][0] 
+            # Finally show the pre-filled form
             return render_template('add.html', form=form)  
 
         elif (form.save.data): # Save article to database
@@ -170,11 +212,10 @@ def add():
                 # Process authors
                 authors = []
                 while (len(form.authors_fieldlist) > 0):
-                    from nameparser import HumanName
+                    # Process authors into the database format
                     author_form = form.authors_fieldlist.pop_entry()
-                    author_data = {'firstname': author_form.firstname.data, 'lastname': author_form.lastname.data}
-                    hn = HumanName(u"{}, {}".format(author_data[u'lastname'], author_data[u'firstname'])) # HumanName parses names from strings, thus combine the already separated last and first names
-                    author = Author(**hn.as_dict(True))
+                    author_data = {u'first': author_form.firstname.data, u'middle': author_form.middlename.data, u'last': author_form.lastname.data}
+                    author = Author(**author_data)
                     possible_matches = Author.query.filter_by(last=author.last, first=author.first)
                     # TODO: If author only provides initials, then try to match those
                     found_match = None
@@ -192,21 +233,29 @@ def add():
                 # still required to do db.commit
     
                 # Process journal
-                journal_input = form.journal_field.data
+                journal_input = form.journal_field.journalname.data
+                journal_input_abbrev = form.journal_field.abbrev.data
+                if (journal_input_abbrev == u""):
+                    journal_input_abbrev = None
+                # TODO: Check also for abbreviation
                 journal = Journal.query.filter_by(name=journal_input).first()
+                if journal is None and journal_input_abbrev is not None:
+                    # If journal name did not find anything and the abbreviation is set, then check also that
+                    journal = Journal.query.filter_by(abbreviation=journal_input_abbrev).first()
                 if journal is None:
                     # TODO: fetch journal abbreviation using ie. bibtexparser library
-                    journal = Journal(name=journal_input)
-                    abbrev = abbreviate_journal_name(journal_input)
-                    if abbrev is not None:
-                        journal.abbreviation = abbrev
-                    else:
-                        # Abbreviation turned out None, which could mean that it is not in the database or that the provided journal name is already an
-                        # abbreviation! We test this by running the process in reverse.
-                        fullname = abbreviate_journal_name(journal_input, reverse=True)
-                        if fullname is not None:
-                            journal.name = fullname
-                            journal.abbreviation = journal_input
+                    journal = Journal(name=journal_input, abbreviation=journal_input_abbrev)
+                    if journal_input_abbrev is None: # If abbreviation was not provided, try to find it
+                        abbrev = abbreviate_journal_name(journal_input)
+                        if abbrev is not None:
+                            journal.abbreviation = abbrev
+                        else:
+                            # Abbreviation turned out None, which could mean that it is not in the database or that the provided journal name is already an
+                            # abbreviation! We test this by running the process in reverse.
+                            fullname = abbreviate_journal_name(journal_input, reverse=True)
+                            if fullname is not None:
+                                journal.name = fullname
+                                journal.abbreviation = journal_input
                     db.session.add(journal)
                 # journal now contains the journal for this article and the possibly new journal has been added to the database (waiting for db.session.commit)
 
@@ -252,11 +301,15 @@ def add():
                                 json_month = 1
                             if not 'json_day' in locals():
                                 json_day = 1
-                        if (int(json_year) == int(year)):
+                        try:
+                            formyear = int(year)
+                        except:
+                            formyear = None
+                        if (formyear is None or int(json_year) == formyear):
                             pub_date = datetime(int(json_year), int(json_month), int(json_day))
                         else:
                             # ie. the user has modified the year input, now use a default of Jan 1st
-                            pub_date = datetime(int(year), 1, 1)
+                            pub_date = datetime(formyear, 1, 1)
                 else:
                     try:
                         pub_date = datetime(int(year), 1, 1)
@@ -359,7 +412,7 @@ def add():
                 return render_template('add.html', form=form)
 
         else: # Posted something, but did not press fetchdoi or save
-            flash(u"Uknown error occurred", 'error')
+            flash(u"Unknown error occurred", 'error')
             return render_template('add.html', form=form)
 
     else: # Request method is GET, so show the form

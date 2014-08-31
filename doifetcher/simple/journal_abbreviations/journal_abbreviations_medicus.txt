@@ -771,17 +771,14 @@ Chung-Hua Min Kuo Hsiao Erh Ko I Hsueh Hui Tsa Chih Chung Hua Min KuoHsiao Erh K
 Chung-Hua Min Kuo Wei Sheng Wu Chi Mien I Hsueh Tsa Chih Chinese JournalOf Microbiology and Immunology Chung Hua Min Kuo Wei Sheng Wu Chi Mien=Hsueh Tsa Chih;;
 Chung-Hua Nei Ko Tsa Chih Chinese Journal of Internal Medicine=Chung Hua Nei Ko Tsa Chih;;
 Chung-Hua Ping Li Hsueh Tsa Chih [Chinese Journal of Pathology]=Chung Hua Ping Li Hsueh Tsa Chih;;
-Chung-Hua Shih Yen Ho Lin Chuang Ping Tu Hsueh Tsa Chih ChineseJournal of Experimental and Clinical Virology Chung Hua Shih Yen Ho
-Lin Chuang Ping T=Hsueh Tsa Chih;;
+Chung-Hua Shih Yen Ho Lin Chuang Ping Tu Hsueh Tsa Chih ChineseJournal of Experimental and Clinical Virology Chung Hua Shih Yen Ho Lin Chuang Ping T=Hsueh Tsa Chih;;
 Chung-Hua Wai Ko Tsa Chih [Chinese Journal of Surgery]=Chung Hua Wai Ko Tsa Chih;;
 Chung-Hua Yen Ko Tsa Chih [Chinese Journal of Ophthalmology]=Chung Hua Yen Ko Tsa Chih;;
 Chung-Hua Yu Fang I Hsueh Tsa Chih [Chinese Journal Of Preventive Medicine]=Chung Hua Yu Fang I Hsueh Tsa Chih;;
-Chung-Kuo Chi Sheng Chung Hsueh Yu Chi Sheng Chung Ping Tsa Chih ChineseJournal of Parasitology and Parasitic Diseases Chung Kuo Chi Sheng Chung
-Hsueh Yu Ch=Sheng Chung Ping Tsa Chih;;
+Chung-Kuo Chi Sheng Chung Hsueh Yu Chi Sheng Chung Ping Tsa Chih ChineseJournal of Parasitology and Parasitic Diseases Chung Kuo Chi Sheng Chung Hsueh Yu Ch=Sheng Chung Ping Tsa Chih;;
 Chung-Kuo Chung Hsi I Chieh Ho Tsa Chih (Pei-Ching=Chung Kuo Chung Hsi I Chieh Ho Tsa Chih;;
 Chung-Kuo Chung Yao Tsa Chih China Journal of Chinese Materia Medica (Pei-Ching=Chung Kuo Chung Yao Tsa Chih;;
-Chung-Kuo Hsiu Fu Chung Chien Wai Ko Tsa Chih Chinesse Journal OfReparative and Reconstructive Surgery (Cheng-Tu Shih) Chung Kuo Hsiu Fu
-Chung Chien Wai Ko Ts=Chih;;
+Chung-Kuo Hsiu Fu Chung Chien Wai Ko Tsa Chih Chinesse Journal OfReparative and Reconstructive Surgery (Cheng-Tu Shih) Chung Kuo Hsiu Fu Chung Chien Wai Ko Ts=Chih;;
 Chung-Kuo I Hsueh Ko Hsueh Yuan Hsueh Pao Acta Academiae Medicinae Sinicae=Chung Kuo I Hsueh Ko Hsueh Yuan Hsueh Pao;;
 Chung-Kuo I Liao Chi Hsieh Tsa Chih Chinese Journal of Medical Instrumentation (Shang-Hai Shih=Chung Kuo I Liao Chi Hsieh Tsa Chih;;
 Chung-Kuo Yao Li Hsueh Pao [Acta Pharmacologica Sinica]=Chung Kuo Yao Li Hsueh Pao;;
