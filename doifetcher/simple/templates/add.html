@@ -59,7 +59,11 @@ $('#doi_field').change(function() {
                     {% endif %}
                     </div>
                     <div class="col-sm-2">
+											{% if field.flags.valid and form.json_field.data %}
+												<a href="#" class="btn btn-info active" role="button" data-toggle="modal" data-target="#extradataModal">Show data</a>
+											{% else %}
                         <button type="submit" name="fetch_doi" id="fetch_doi" value="Fetch DOI" class="btn btn-success" {% if field.flags.valid %} disabled{% endif %}>Fetch DOI</button>
+											{% endif %}
                     </div>
                 </div>
             {% else %}
@@ -85,11 +89,34 @@ $('#doi_field').change(function() {
 										{% endfor %}
 									</div>
 									<div class="col-sm-4">
-										{{ field.abbrev(class='form-control', placeholder='abbreviation (optional)')|safe }}
+										{{ field.abbrev(class='form-control', placeholder='abbrev. (opt.)')|safe }}
 										{% for error in field.abbrev.errors %}
 											<p class="text-warning text-right text-uppercase error">{{ error|safe }}</p>
 										{% endfor %}
 									</div>
+								</div>
+								{% elif field.type == "FormField" and field.name == "date_field" %}
+								<div class="form-group">
+									<label class="col-sm-2 control-label" for="date_field">Date</label>
+									<div class="col-sm-4">
+										{{ field.year(class='form-control', placeholder='year')|safe }}
+										{% for error in field.year.errors %}
+											<p class="text-warning text-right text-uppercase error">{{ error|safe }}</p>
+										{% endfor %}
+									</div>
+									<div class="col-sm-3">
+										{{ field.month(class='form-control', placeholder='month (opt.)')|safe }}
+										{% for error in field.month.errors %}
+											<p class="text-warning text-right text-uppercase error">{{ error|safe }}</p>
+										{% endfor %}
+									</div>
+									<div class="col-sm-3">
+										{{ field.day(class='form-control', placeholder='day (opt.)')|safe }}
+										{% for error in field.day.errors %}
+											<p class="text-warning text-right text-uppercase error">{{ error|safe }}</p>
+										{% endfor %}
+									</div>
+
 								</div>
                 {% elif field.type == "FieldList" and field.name == "authors_fieldlist" %}
 								<div class="f-repeat">
@@ -158,5 +185,26 @@ $('#doi_field').change(function() {
 
     </form>
 
+		{% if form.json_field %}
+		<div class="modal fade" id="extradataModal" tabindes="-1" role="dialog" aria-labelledby="extradataModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+						<h4 class="modal-title" id="extradataModelLabel">DOI fetch data (JSON)</h4>
+					</div>
+					<div class="modal-body">
+						<pre class="pre-scrollable small">{{ form.json_field.data|prettyjson }}</pre>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endif %}
 {% endblock %}
 
+{% block marketing %}
+
+{% endblock %}

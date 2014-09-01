@@ -203,11 +203,16 @@ def add():
                 form.title_field.data = json_data.get(u'title')
                 form.volume_field.data = json_data.get(u'volume')                   
                 form.pages_field.data = json_data.get(u'page')
-                # Work out the publication year
+                # Work out the publication date
                 issued = json_data.get(u'issued')
                 date_data = issued.get(u'date-parts') 
                 if (date_data):
-                    form.year_field.data = date_data[0][0] 
+                    try:
+                        form.date_field.year.data = date_data[0][0]
+                        form.date_field.month.data = date_data[0][1]
+                        form.date_field.day.data = date_data[0][2]
+                    except Exception as e:
+                        pass
             # Finally show the pre-filled form
             return render_template('add.html', form=form)  
 
@@ -241,25 +246,14 @@ def add():
                 journal_input_abbrev = form.journal_field.abbrev.data
                 if (journal_input_abbrev == u""):
                     journal_input_abbrev = None
-                # TODO: Check also for abbreviation
+                # Find out wheter journal is aleady in the database
                 journal = Journal.query.filter_by(name=journal_input).first()
                 if journal is None and journal_input_abbrev is not None:
                     # If journal name did not find anything and the abbreviation is set, then check also that
                     journal = Journal.query.filter_by(abbreviation=journal_input_abbrev).first()
                 if journal is None:
-                    # TODO: fetch journal abbreviation using ie. bibtexparser library
+                    # If journal not in database, create one and add it there
                     journal = Journal(name=journal_input, abbreviation=journal_input_abbrev)
-                    if journal_input_abbrev is None: # If abbreviation was not provided, try to find it
-                        abbrev = abbreviate_journal_name(journal_input)
-                        if abbrev is not None:
-                            journal.abbreviation = abbrev
-                        else:
-                            # Abbreviation turned out None, which could mean that it is not in the database or that the provided journal name is already an
-                            # abbreviation! We test this by running the process in reverse.
-                            fullname = abbreviate_journal_name(journal_input, reverse=True)
-                            if fullname is not None:
-                                journal.name = fullname
-                                journal.abbreviation = journal_input
                     db.session.add(journal)
                 # journal now contains the journal for this article and the possibly new journal has been added to the database (waiting for db.session.commit)
 
@@ -268,7 +262,9 @@ def add():
                 title = form.title_field.data
                 volume = form.volume_field.data
                 pages = form.pages_field.data
-                year = form.year_field.data
+                year = form.date_field.year.data
+                month = form.date_field.month.data
+                day = form.date_field.day.data
                 
                 # json
                 json_data = form.json_field.data
@@ -279,49 +275,45 @@ def add():
                 volume = volume if volume != u"" else None
                 pages = pages if pages != u"" else None
                 year = year if year != u"" else None
-                json_data = json_data if json_data != u"" else None
+                month = month if month != u"" else None
+                day = day if day != u"" else None
+                try:
+                    json_data = json.loads(json_data) if json_data != u"" else None
+                except ValueError:
+                    # Could not load json_data into json (probably it's not json)
+                    json_data = None
 
+                # Process date
+                try:
+                    # Process dates into numbers
+                    year = int(year)
+                    month = int(month)
+                    day = int(day)
+                except Exception as e:
+                    print(e.__class__.__name__)
+                    print(e)
+                finally:
+                    if (type(year) != int):
+                        year = datetime.date.today().year # Default to this year
+                    if (type(month) != int or month < 1 or month > 12):
+                        month = 1
+                    if (type(day) != int or day < 1 or day > 31):
+                        day = 1
+                # Now we have year, month, day, which are all integer
+                try:
+                    pub_date = datetime(year, month, day)
+                except ValueError:
+                    # Day was probably out of bounds, since other have been checked already
+                    pub_date = datetime(year, month, 1) # Default to first day of month
+   
                 # Check whether the doi already exists in the database
                 if doi is not None:
                     article = Article.query.filter_by(doi=doi).first()
                 elif title is not None:
                     # If doi is None, then try to fetch by article title (more unreliable due to different spelling forms)
                     article = Article.query.filter_by(title=title).first()
-                
-                # Fetch some extra data from json
-                if json_data is not None:
-                    json_data = json.loads(json_data)
-                    issued = json_data.get(u'issued')
-                    date_data = issued.get(u'date-parts') 
-                    if (date_data):
-                        try:
-                            json_year = date_data[0][0]
-                            json_month = date_data[0][1]
-                            json_day = date_data[0][2]
-                        except IndexError:
-                            if not 'json_year' in locals():
-                                json_year = year
-                            if not 'json_month' in locals():
-                                json_month = 1
-                            if not 'json_day' in locals():
-                                json_day = 1
-                        try:
-                            formyear = int(year)
-                        except:
-                            formyear = None
-                        if (formyear is None or int(json_year) == formyear):
-                            pub_date = datetime(int(json_year), int(json_month), int(json_day))
-                        else:
-                            # ie. the user has modified the year input, now use a default of Jan 1st
-                            pub_date = datetime(formyear, 1, 1)
-                else:
-                    try:
-                        pub_date = datetime(int(year), 1, 1)
-                    except:
-                        pub_date = None 
 
-
-                # If not then add
+                # If article was not found in the database
                 if article is None:
                     add_date = datetime.now()
                     article = Article(

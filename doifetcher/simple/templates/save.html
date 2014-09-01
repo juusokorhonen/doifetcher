@@ -6,7 +6,15 @@
 		<dl class="dl-horizontal">
 			<dt>DOI</dt><dd>{{ article.doi|sn }}</dd>
 			<dt>Title</dt><dd>{{ article.title|sn }}</dd>
-			<dt>Authors</dt><dd><a href="#" data-toggle="modal" data-target="#authorsModal">{{ article.authors|count|sn }}</a></dd>
+			<dt>Authors</dt><dd>				
+				{% if article.authors|count > 1 %}
+				<a href="#" data-toggle="modal" data-target="#authorsModal">{{ article.authors[0].first|sn }} {{ article.authors[0].last|sn }}	<em>et al.</em></a>
+				{% elif article.authors == 1 %}
+					{{ article.authors[0].first|sn }} {{ article.authors[0].last|sn }} 
+				{% else %}
+				   -
+				{% endif %}
+				</dd>
 			<dt>Journal</dt><dd>{{ article.journal.name|sn }} {% if article.journal.abbreviation and article.journal.abbreviation != article.journal.name %}({{ article.journal.abbreviation }}){% endif %}</dd>
 			<dt>DOI fetch data</dt><dd>
 				{% if article.json_data %}
@@ -82,7 +90,8 @@
 		</div>
 
     <a href="{{ url_for('.add') }}" class="btn btn-default active" role="button">Continue</a>
+{% endblock %}
 
-
+{% block marketing %}
 {% endblock %}
 
