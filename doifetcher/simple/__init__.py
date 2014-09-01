@@ -94,9 +94,13 @@ def apply_unicode_tricks(rawstr):
     except TypeError:
         # We already had unicode
         unicodestr = rawstr 
-    # Now convert to utf-8
-    #unicodestr = unicodedata.normalize(u'NFKD', unicodestr)
-    #unicodestr = unicodestr.decode('utf-8')
+    # Try to unescape unicode
+    try:
+        unicodestr = unicodestr.decode('unicode_escape')
+    except UnicodeEncodeError:
+        pass # Nothing to escape
+    # Now normalize to Normal Form C, which seems to work best with Google Fonts (NFD fails for some reason) 
+    unicodestr = unicodedata.normalize(u'NFC', unicodestr)
     return unicodestr
 
 def abbreviate_journal_name(name, reverse=False):
@@ -116,7 +120,7 @@ def abbreviate_journal_name(name, reverse=False):
                                 'journal_abbreviations_entrez.txt']
     for filename in abbreviation_filenames: # Try all abbreviation files one by one
         # This load trick from http://stackoverflow.com/questions/4842057/python-easiest-way-to-ignore-blank-lines-when-reading-a-file
-        # Code borrowed from bibbreviate package by Steven Hamblin (https://github.com/Winawer/bibbreviate)
+        # Code gratefully borrowed from bibbreviate package by Steven Hamblin (https://github.com/Winawer/bibbreviate)
         try:
             abbrevs = filter(None,(line.rstrip() for line in codecs.open(u"{}/{}".format(abbreviation_dir,filename),encoding='utf-8')))
         except:
