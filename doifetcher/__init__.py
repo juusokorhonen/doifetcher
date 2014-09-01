@@ -19,11 +19,14 @@ def create_app(config=None, configfile=None):
     :returns: Flask application
     """
     app = Flask(__name__)
+    
     # Configure app
     AppConfig(app, default_settings=config, configfile=configfile) # Use of flask-appconfig is highly recommended
     Bootstrap(app) # Use flask-bootstrap
+    
     # Enable CSRF protection (not really sure if this is needed or not - it's needed for views without forms)
     CsrfProtect(app)
+    
     # Import Blueprints
     from doifetcher.simple import simple # Use Blueprints
     app.register_blueprint(simple) # register Frontend blueprint
@@ -33,12 +36,22 @@ def create_app(config=None, configfile=None):
     app.register_blueprint(batch)
     from doifetcher.export import export
     app.register_blueprint(export)
+    
     # Import database model
     from doifetcher.model import db
     db.init_app(app)
-    # Development purposes
-    from doifetcher.model import populate_example_data
-    populate_example_data(app,db)
+
+    # Development-specific functions 
+    if (app.config['DEBUG']):
+        from doifetcher.model import populate_example_data
+        populate_example_data(app,db)
+    # Testing-specifig functions
+    if (app.config['TESTING']):
+        pass
+    # Production-specific functions
+    if (app.config['PRODUCTION']):
+        pass
+
     # Add custom filter to jinja
     app.jinja_env.filters['prettyjson'] = _jinja2_filter_prettyjson
     app.jinja_env.filters['sn'] = _jinja2_filter_supress_none
