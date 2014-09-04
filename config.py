@@ -7,7 +7,7 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/doifetcher.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite+pysqlite:////tmp/doifetcher.db'
 
 class TestingConfig(Config):
     TESTING = True

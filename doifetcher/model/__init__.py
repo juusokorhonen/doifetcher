@@ -4,6 +4,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from nameparser import HumanName
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.orderinglist import ordering_list
 
 db = SQLAlchemy() # db get bound to the app by using the init_app(app)-function
 
@@ -11,69 +13,21 @@ def populate_example_data(app, db):
     app.test_request_context().push()
     db.drop_all()
     db.create_all()
-
-    js = []
-    js.append(Journal(name=u'Nano Research', abbreviation=u'Nano Res.'))
-    js.append(Journal(name=u'ChemSusChem'))
-    js.append(Journal(name=u'Soft Matter'))
-    js.append(Journal(name=u'Journal of Nanoparticle Research', abbreviation='J. Nanopart. Res.'))
-    arts = []
-    arts.append(Article(doi=u'10.1007/s12274-012-0282-6',
-                     title=u'Single-walled carbon nanotube networks for ethanol vapor sensing applications',
-                     journal=js[0],
-                     pub_date=datetime(2013,02,01)))
-    arts.append(Article(doi=u'10.1039/C2SM26932E',
-                              title=u'The role of hemicellulose in nanofibrillated cellulose networks',
-                              journal=js[2],
-                              pub_date=datetime(2012,11,20)))
-    arts.append(Article(doi=u'10.1007/s11051-013-1883-z',
-                                    title=u'High gradient magnetic separation of upconverting lanthanide nanophosphors based on their intrinsic paramagnetism',
-                                    journal=js[3],
-                                    pub_date=datetime(2013,8,1)))
-    arts.append(Article(doi=u'10.1007/s11051-013-1850-8',
-                             title=u'Enhancement of blue upconversion luminescence in hexagonal NaYF4:Yb,Tm by using K and Sc ions',
-                             journal=js[0],
-                             pub_date=datetime(2013,7,1)))
-    
-    for j in js:
-        db.session.add(j)
-    for a in arts:
-        db.session.add(a)
     db.session.commit()
 
 # Helper table for many-to-many relationships
-article_to_author = db.Table('article_to_author',
-        db.Column('article_id', db.Integer, db.ForeignKey('article.id')),
-        db.Column('author_id', db.Integer, db.ForeignKey('author.id')))
-
-class Article(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    doi = db.Column(db.String(4096))
-    title = db.Column(db.String(4096))
-    journal_id = db.Column(db.Integer, db.ForeignKey('journal.id'))
-    journal = db.relationship('Journal',
-            backref=db.backref('articles', lazy='dynamic'))
-    volume = db.Column(db.String(4096))
-    pages = db.Column(db.String(4096))
-    pub_date = db.Column(db.DateTime)
-    add_date = db.Column(db.DateTime)
-    mod_date = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.current_timestamp())
-    json_data = db.Column(db.Text)
-    authors = db.relationship('Author', secondary=article_to_author,
-            backref=db.backref('articles', lazy='dynamic'))
-
-    def __repr__(self):
-        return '<Article %r>' % self.doi
-
-class Journal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(4096), unique=True)
-    abbreviation = db.Column(db.String(4096))
-
-    def __repr__(self):
-        return '<Journal %r>' % self.name
+#article_to_author = db.Table('article_to_author',
+#        db.Column('article_id', db.Integer, db.ForeignKey('article.id', ondelete='cascade'),
+#            primary_key=True),
+#        db.Column('author_id', db.Integer, db.ForeignKey('author.id', ondelete='cascade'),
+#            primary_key=True),
+#        db.Column('author', db.relationship('Author')),
+#        db.Column('position', db.Integer))
 
 class Author(db.Model):
+    """Represents an author of an article. Each author can author many articles."""
+    __tablename__ = 'authors'
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(4096))
     first = db.Column(db.String(4096), nullable=False)
@@ -81,6 +35,7 @@ class Author(db.Model):
     last = db.Column(db.String(4096), nullable=False)
     suffix = db.Column(db.String(4096))
     nickname = db.Column(db.String(4096))
+    mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
 
     def __repr__(self):
         return u"<Author {}, {} {}>".format(self.last, self.first, self.middle)
@@ -110,3 +65,49 @@ class Author(db.Model):
         if (self.middle):
             return u"{}, {} {}".format(self.last, self.first, self.middle)
         return u"{}, {}".format(self.last, self.first)
+
+class ArticleAuthor(db.Model):
+    """Maps an ordered many-to-many relationship between articles and authors."""
+    __tablename__ = 'article_authors'
+
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id'), primary_key=True)
+    author_id = db.Column(db.Integer, db.ForeignKey('authors.id'), primary_key=True)
+    author = db.relationship('Author')
+    position = db.Column(db.Integer)
+
+class Article(db.Model):
+    """Represents an article, which can have many authors."""
+    __tablename__ = "articles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    doi = db.Column(db.String(4096))
+    title = db.Column(db.String(4096))
+    journal_id = db.Column(db.Integer, db.ForeignKey('journal.id'))
+    journal = db.relationship('Journal',
+            backref=db.backref('articles', lazy='dynamic'))
+    volume = db.Column(db.String(4096))
+    pages = db.Column(db.String(4096))
+    pub_date = db.Column(db.DateTime)
+    add_date = db.Column(db.DateTime)
+    json_data = db.Column(db.Text)
+    _authors = db.relationship('ArticleAuthor',
+            order_by='ArticleAuthor.position',
+            collection_class=ordering_list('position'))
+    authors = association_proxy('_authors', 'author',
+            creator=lambda _a: ArticleAuthor(author=_a))
+    mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
+
+
+    def __repr__(self):
+        return '<Article %r>' % self.doi
+
+class Journal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(4096))
+    abbreviation = db.Column(db.String(4096))
+    mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
+
+    def __repr__(self):
+        return '<Journal %r>' % self.name
+
+

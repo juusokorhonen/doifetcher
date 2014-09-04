@@ -93,7 +93,7 @@ $('ul.nav a').filter(function() {
             {% for category, message in messages %}
                 {% if category == 'error' %}
                     <div class="alert alert-danger">
-                {% elif categoty == 'warning' %}
+                {% elif category == 'warning' %}
                     <div class="alert alert-warning">
                 {% else %}
                     <div class="alert alert-info">
@@ -113,9 +113,9 @@ $('ul.nav a').filter(function() {
     <ul class="nav nav-tabs nav-justified" role="tablist">
         <li><a href="{{ url_for('welcome_page') }}">Start</a></li>
 				<li><a href="{{ url_for('simple.add') }}">Add one</a></li>
-				<li><a href="{{ url_for('batch.batch_import') }}">Batch import</a></li>
-				<li><a href="{{ url_for('browse.browse_articles') }}">Browse database</a></li>
-				<li><a href="{{ url_for('export.export_data') }}">Export</a></li>
+				<li class="disabled"><a href="{{ url_for('batch.batch_import') }}">Batch import</a></li>
+				<li><a href="#">Browse database</a></li>
+				<li class="disabled"><a href="{{ url_for('export.export_data') }}">Export</a></li>
     </ul>
 {% endblock %}
 
@@ -123,7 +123,7 @@ $('ul.nav a').filter(function() {
 
 {% block content %}
 <div class="row jumbotron">
-    <h1>DOI Fetcher</h1>
+	  <h1>{{ config.SITE_TITLE|safe or 'DOI Fetcher' }}</h1>
     {% block contentbody %}
     <p class="lead">Highlighted content</p>
     <a class="btn btn-large btn-success" href="#">Example button!</a>
@@ -144,7 +144,7 @@ $('ul.nav a').filter(function() {
 
 <div class="footer">
     {% block footer %}
-    <p>&copy; Company 2014</p>
+		<p>{{ config.COPYRIGHT|safe or '&copy; Company 2014'|safe }}</p>
     {% endblock %}
 </div>
 {% endblock %}

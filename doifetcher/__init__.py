@@ -30,8 +30,10 @@ def create_app(config=None, configfile=None):
     # Import Blueprints
     from doifetcher.simple import simple # Use Blueprints
     app.register_blueprint(simple) # register Frontend blueprint
-    from doifetcher.browse import browse
-    app.register_blueprint(browse)
+    #from doifetcher.browse import admin, browse
+    #admin.init_app(app)
+    #app.register_blueprint(browse)
+
     from doifetcher.batch import batch
     app.register_blueprint(batch)
     from doifetcher.export import export
@@ -42,14 +44,14 @@ def create_app(config=None, configfile=None):
     db.init_app(app)
 
     # Development-specific functions 
-    if (app.config['DEBUG']):
+    if (app.debug):
         from doifetcher.model import populate_example_data
         populate_example_data(app,db)
     # Testing-specifig functions
-    if (app.config['TESTING']):
+    if (app.config.get('TESTING')):
         pass
     # Production-specific functions
-    if (app.config['PRODUCTION']):
+    if (app.config.get('PRODUCTION')):
         pass
 
     # Add custom filter to jinja

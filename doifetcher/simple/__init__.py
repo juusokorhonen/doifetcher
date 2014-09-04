@@ -239,6 +239,8 @@ def add():
                     else:
                         authors.append((found_match, False))
                 # authors now contains all the authors and the new ones are added to the db.session
+                # However, the authors were popped out from back-to-front, thus reverse the list
+                authors.reverse()
                 # still required to do db.commit
     
                 # Process journal
