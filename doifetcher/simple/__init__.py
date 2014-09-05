@@ -220,10 +220,13 @@ def add():
             if (form.validate()): # If form validates, save it        
                 # Process authors
                 authors = []
+                print(len(form.authors_fieldlist))
                 while (len(form.authors_fieldlist) > 0):
                     # Process authors into the database format
                     author_form = form.authors_fieldlist.pop_entry()
+                    print(author_form)
                     author_data = {u'first': author_form.firstname.data, u'middle': author_form.middlename.data, u'last': author_form.lastname.data}
+                    print(author_data)
                     author = Author(**author_data)
                     possible_matches = Author.query.filter_by(last=author.last, first=author.first)
                     # TODO: If author only provides initials, then try to match those
@@ -241,6 +244,7 @@ def add():
                 # authors now contains all the authors and the new ones are added to the db.session
                 # However, the authors were popped out from back-to-front, thus reverse the list
                 authors.reverse()
+                print(authors)
                 # still required to do db.commit
     
                 # Process journal
@@ -292,8 +296,9 @@ def add():
                     month = int(month)
                     day = int(day)
                 except Exception as e:
-                    print(e.__class__.__name__)
-                    print(e)
+                    pass
+                    #print(e.__class__.__name__)
+                    #print(e)
                 finally:
                     if (type(year) != int):
                         year = datetime.date.today().year # Default to this year
@@ -309,9 +314,10 @@ def add():
                     pub_date = datetime(year, month, 1) # Default to first day of month
    
                 # Check whether the doi already exists in the database
+                article = None # Have to initialize this way so that second if-clause doesn't return with error
                 if doi is not None:
                     article = Article.query.filter_by(doi=doi).first()
-                elif title is not None:
+                if article is None and title is not None:
                     # If doi is None, then try to fetch by article title (more unreliable due to different spelling forms)
                     article = Article.query.filter_by(title=title).first()
 
@@ -383,16 +389,13 @@ def add():
                         if (updatemsg != u""): updatemsg += u", " # Add a comma
                         updatemsg += u"authors modified: {}".format(authorsmsg)
                     
-                    if (article.json_data != json.dumps(json_data)):
+                    if (json_data is not None and article.json_data != json.dumps(json_data)):
                         if (updatemsg != u""): updatemsg += u", " # Add a comma
                         if article.json_data is None:
-                            updatemsg += u"json data modified"
-                            article.json_data = json.dumps(json_data)
-                        elif json_data is not None:
-                            updatemsg += u"json data modified"
+                            updatemsg += u"json data added"
                             article.json_data = json.dumps(json_data)
                         else:
-                            updatemsg += u"json data was preserved"
+                            updatemsg += u"json data modified"
 
                     if (updatemsg == u""): 
                         # No fields updated

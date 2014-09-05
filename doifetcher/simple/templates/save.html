@@ -9,7 +9,7 @@
 			<dt>Authors</dt><dd>				
 				{% if article.authors|count > 1 %}
 				<a href="#" data-toggle="modal" data-target="#authorsModal">{{ article.authors[0].first|sn }} {{ article.authors[0].last|sn }}	<em>et al.</em></a>
-				{% elif article.authors == 1 %}
+				{% elif article.authors|count == 1 %}
 					{{ article.authors[0].first|sn }} {{ article.authors[0].last|sn }} 
 				{% else %}
 				   -

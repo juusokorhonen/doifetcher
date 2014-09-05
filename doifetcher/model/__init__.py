@@ -92,7 +92,9 @@ class Article(db.Model):
     json_data = db.Column(db.Text)
     _authors = db.relationship('ArticleAuthor',
             order_by='ArticleAuthor.position',
-            collection_class=ordering_list('position'))
+            collection_class=ordering_list('position'),
+            cascade='all, delete-orphan',
+            backref=db.backref('articles', lazy='joined'))
     authors = association_proxy('_authors', 'author',
             creator=lambda _a: ArticleAuthor(author=_a))
     mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
