@@ -220,13 +220,13 @@ def add():
             if (form.validate()): # If form validates, save it        
                 # Process authors
                 authors = []
-                print(len(form.authors_fieldlist))
+                #print(len(form.authors_fieldlist))
                 while (len(form.authors_fieldlist) > 0):
                     # Process authors into the database format
                     author_form = form.authors_fieldlist.pop_entry()
-                    print(author_form)
+                    #print(author_form)
                     author_data = {u'first': author_form.firstname.data, u'middle': author_form.middlename.data, u'last': author_form.lastname.data}
-                    print(author_data)
+                    #print(author_data)
                     author = Author(**author_data)
                     possible_matches = Author.query.filter_by(last=author.last, first=author.first)
                     # TODO: If author only provides initials, then try to match those
@@ -244,7 +244,7 @@ def add():
                 # authors now contains all the authors and the new ones are added to the db.session
                 # However, the authors were popped out from back-to-front, thus reverse the list
                 authors.reverse()
-                print(authors)
+                #print(authors)
                 # still required to do db.commit
     
                 # Process journal
