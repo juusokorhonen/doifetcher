@@ -16,6 +16,10 @@
 				{% endif %}
 				</dd>
 			<dt>Journal</dt><dd>{{ article.journal.name|sn }} {% if article.journal.abbreviation and article.journal.abbreviation != article.journal.name %}({{ article.journal.abbreviation }}){% endif %}</dd>
+			<dt>Year</dt><dd>{{ article.pub_date.year|sn }}</dd>
+			<dt>Volume</dt><dd>{{ article.volume|sn }}</dd>
+			<dt>Issue</dt><dd>{{ article.issue|sn }}</dd>
+			<dt>Pages</dt><dd>{{ article.pages|sn }}</dd>
 			<dt>DOI fetch data</dt><dd>
 				{% if article.json_data %}
 					<a href="#" data-toggle="modal" data-target="#extradataModal">Show</a>

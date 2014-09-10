@@ -34,6 +34,7 @@ class AddArticleForm(Form):
     journal_field = FormField(JournalForm) 
     title_field = StringField(u"Title", validators=[Required()])
     volume_field = StringField(u"Volume", validators=[Optional()])
+    issue_field = StringField(u"Issue", validators=[Optional()])
     pages_field = StringField(u"Pages", validators=[Optional()])
     #year_field = StringField(u"Year", validators=[Required()])
     date_field = FormField(DateForm)

@@ -202,6 +202,7 @@ def add():
                 # Work out title, volume, pages
                 form.title_field.data = json_data.get(u'title')
                 form.volume_field.data = json_data.get(u'volume')                   
+                form.issue_field.data = json_data.get(u'issue')
                 form.pages_field.data = json_data.get(u'page')
                 # Work out the publication date
                 issued = json_data.get(u'issued')
@@ -267,6 +268,7 @@ def add():
                 doi = form.doi_field.data
                 title = form.title_field.data
                 volume = form.volume_field.data
+                issue = form.issue_field.data
                 pages = form.pages_field.data
                 year = form.date_field.year.data
                 month = form.date_field.month.data
@@ -279,6 +281,7 @@ def add():
                 doi = doi if doi != u"" else None
                 title = title if title != u"" else None
                 volume = volume if volume != u"" else None
+                issue = issue if issue != u"" else None
                 pages = pages if pages != u"" else None
                 year = year if year != u"" else None
                 month = month if month != u"" else None
@@ -328,6 +331,7 @@ def add():
                             doi=doi,
                             title=title,
                             volume=volume,
+                            issue=issue,
                             pages=pages,
                             pub_date=pub_date,
                             add_date=add_date,
@@ -355,6 +359,11 @@ def add():
                         if (updatemsg != u""): updatemsg += u", " # Add a comma
                         updatemsg += u"volume: {} --> {}".format(article.volume, volume)
                         article.volume = volume
+
+                    if (article.issue != issue):
+                        if (updatemsg != u""): updatemsg += u", " # Add a comma
+                        updatemsg += u"issue: {} --> {}".format(article.issue, issue)
+                        article.issue = issue
                     
                     if (article.pages != pages):
                         if (updatemsg != u""): updatemsg += u", " # Add a comma

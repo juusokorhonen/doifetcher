@@ -82,10 +82,11 @@ class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     doi = db.Column(db.String(4096))
     title = db.Column(db.String(4096))
-    journal_id = db.Column(db.Integer, db.ForeignKey('journal.id'))
+    journal_id = db.Column(db.Integer, db.ForeignKey('journals.id'))
     journal = db.relationship('Journal',
             backref=db.backref('articles', lazy='dynamic'))
     volume = db.Column(db.String(4096))
+    issue = db.Column(db.String(4096))
     pages = db.Column(db.String(4096))
     pub_date = db.Column(db.DateTime)
     add_date = db.Column(db.DateTime)
@@ -104,6 +105,9 @@ class Article(db.Model):
         return '<Article %r>' % self.doi
 
 class Journal(db.Model):
+    """Represents a (scientific) journal, which has a name and an optional abbreviation."""
+    __tablename__ = "journals"
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(4096))
     abbreviation = db.Column(db.String(4096))

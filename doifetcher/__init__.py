@@ -6,6 +6,7 @@ from flask_appconfig import AppConfig
 from flask_wtf.csrf import CsrfProtect
 from jinja2 import TemplateNotFound
 from doifetcher.forms import AddArticleForm
+from datetime import datetime
 import json
 import pprint
 
@@ -46,7 +47,7 @@ def create_app(config=None, configfile=None):
     # Development-specific functions 
     if (app.debug):
         from doifetcher.model import populate_example_data
-        populate_example_data(app,db)
+        #populate_example_data(app,db)
     # Testing-specifig functions
     if (app.config.get('TESTING')):
         pass
@@ -81,3 +82,4 @@ def _jinja2_filter_supress_none(val):
         return val
     else:
         return u''
+
