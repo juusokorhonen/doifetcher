@@ -1,5 +1,32 @@
 {% extends "base.html" %}
 
+{% block scripts %}
+{{ super() }}
+<script>
+// A nice function written by Jason Edelman (source: http://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse)
+function selectText(element) {
+    var doc = document
+        , text = doc.getElementById(element)
+        , range, selection
+    ;    
+    if (doc.body.createTextRange) { //ms
+        range = doc.body.createTextRange();
+        range.moveToElementText(text);
+        range.select();
+    } else if (window.getSelection) { //all others
+        selection = window.getSelection();        
+        range = doc.createRange();
+        range.selectNodeContents(text);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+}
+$("#selectHTML").click(function() {
+		selectText("htmlcode");
+});
+</script>
+{% endblock %}
+
 {% block contentbody %}
 	<h2>Export all</h2>
 
@@ -21,7 +48,8 @@
 					<h4 class="modal-title" id="htmldataModelLabel">HTML Source Code</h4>
 				</div>
 				<div class="modal-body">
-					<pre class="pre-scrollable small"><code class="html">{{ listhtml }}</code></pre>
+					<p class="text-right"><a href="#" type="button" class="btn btn-default btn-sm" id="selectHTML">Select all</a></p>
+					<pre class="pre-scrollable small"><code class="html" id="htmlcode">{{ listhtml }}</code></pre>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
