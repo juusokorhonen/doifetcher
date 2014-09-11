@@ -12,6 +12,6 @@
 		{% if article.doi %}DOI:&nbsp;<a href="http://dx.doi.org/{{ article.doi }}">{{ article.doi }}</a>{% endif %}
 	</p></li>
 	{% endfor %}
-	{% set counter = counter + year|length %}
+	{% set counter = counter + year.list|length %}
 </ol>
 {% endfor %}
