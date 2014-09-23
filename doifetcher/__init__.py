@@ -31,9 +31,6 @@ def create_app(config=None, configfile=None):
     # Import Blueprints
     from doifetcher.simple import simple # Use Blueprints
     app.register_blueprint(simple) # register Frontend blueprint
-    #from doifetcher.browse import admin, browse
-    #admin.init_app(app)
-    #app.register_blueprint(browse)
 
     from doifetcher.batch import batch
     app.register_blueprint(batch)
@@ -44,6 +41,13 @@ def create_app(config=None, configfile=None):
     from doifetcher.model import db
     db.init_app(app)
 
+    # Admin interface
+    from doifetcher.admin import admin_section
+    admin_section.init_app(app)
+    admin_section.init_db(db)
+    admin_section.name = u"{} :: {}".format(app.config.get('SITE_TITLE', 'DOI Fetcher'), u"Admin Interface")
+    
+    
     # Development-specific functions 
     if (app.debug):
         from doifetcher.model import populate_example_data

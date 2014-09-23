@@ -14,3 +14,4 @@ nameparser
 #bibtexparser
 #chardet
 #MySQL-Python # Required for MySQL-connectivity
+flask-admin
