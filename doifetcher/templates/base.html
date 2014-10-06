@@ -111,11 +111,11 @@ $('ul.nav a').filter(function() {
 
 {% block navbar %}
     <ul class="nav nav-tabs nav-justified" role="tablist">
-        <li><a href="{{ url_for('welcome_page') }}">Start</a></li>
-				<li><a href="{{ url_for('simple.add') }}">Add one</a></li>
+        <li><a href="{{ url_for('welcome_page') }}"><span class="glyphicon glyphicon-home"></span> Start</a></li>
+				<li><a href="{{ url_for('simple.add') }}"><span class="glyphicon glyphicon-plus-sign"></span> Add one</a></li>
 				<li class="disabled"><a href="{{ url_for('batch.batch_import') }}">Batch import</a></li>
-				<li><a href="#">Browse database</a></li>
-				<li><a href="{{ url_for('export.export_welcome') }}">Export</a></li>
+				<li><a href="{{ url_for('export.export_welcome') }}"><span class="glyphicon glyphicon-export"></span> Export</a></li>
+				<li><a class="text-danger" href="{{ url_for('admin.index') }}"><span class="glyphicon glyphicon-lock"></span> Admin</a></li>
     </ul>
 {% endblock %}
 

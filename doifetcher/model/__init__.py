@@ -66,6 +66,13 @@ class Author(db.Model):
             return u"{}, {} {}".format(self.last, self.first, self.middle)
         return u"{}, {}".format(self.last, self.first)
 
+    def __repr__(self):
+        #return '<Author %r>' % self.name()
+        return u'{}'.format(self.name())
+    
+    def __unicode__(self):
+        return self.__repr__()
+
 class ArticleAuthor(db.Model):
     """Maps an ordered many-to-many relationship between articles and authors."""
     __tablename__ = 'article_authors'
@@ -102,7 +109,11 @@ class Article(db.Model):
 
 
     def __repr__(self):
-        return '<Article %r>' % self.doi
+        #return '<Article %r>' % self.doi
+        return u'{}'.format(self.title)
+
+    def __unicode__(self):
+        return self.__repr__()
 
 class Journal(db.Model):
     """Represents a (scientific) journal, which has a name and an optional abbreviation."""
@@ -114,6 +125,8 @@ class Journal(db.Model):
     mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
 
     def __repr__(self):
-        return '<Journal %r>' % self.name
+        #return '<Journal %r>' % self.name
+        return u'{}'.format(self.name)
 
-
+    def __unicode__(self):
+        return self.__repr__()
