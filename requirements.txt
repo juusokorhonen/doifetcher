@@ -4,7 +4,7 @@ flask-appconfig
 flask-bootstrap
 flask-wtf
 wtforms
-#Flask-SuperAdmin
+Flask-SuperAdmin
 requests
 #lxml
 sqlalchemy
@@ -14,4 +14,4 @@ nameparser
 #bibtexparser
 #chardet
 #MySQL-Python # Required for MySQL-connectivity
-flask-admin
+#flask-admin
