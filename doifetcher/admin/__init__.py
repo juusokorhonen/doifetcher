@@ -13,12 +13,18 @@ class _AdminView(BaseView):
     def index(self):
         return self.render('admin/index.html')
 
+class _DbModel(model.ModelAdmin):
+    pass
+
+class _JournalModel(_DbModel):
+    list_display = ('name', 'abbreviation', 'articles')
+
 import types
 # Initialize database connection
 def init_db(self, db):
-    self.register(Article, session=db.session)
-    self.register(Author, session=db.session)
-    self.register(Journal, session=db.session)
+    self.register(Article, _DbModel, session=db.session)
+    self.register(Author, _DbModel, session=db.session)
+    self.register(Journal, _JournalModel, session=db.session)
 
 # Bind the method to the object
 admin_section.init_db = types.MethodType(init_db, admin_section)
