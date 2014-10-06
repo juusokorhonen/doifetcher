@@ -6,7 +6,7 @@ class Config(object):
     SECRET_KEY = "df2x1aqw%6&y8k4@!u-hj8e8*5&)58_t(@9wyc%*+847p90uxnh2ewf3"
 
 class DevelopmentConfig(Config):
-    DEBUG = True
+    DEBUG = True 
     SQLALCHEMY_DATABASE_URI = 'sqlite+pysqlite:////tmp/doifetcher.db'
 
 class TestingConfig(Config):

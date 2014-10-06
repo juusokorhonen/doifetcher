@@ -63,6 +63,10 @@ def create_app(config=None, configfile=None):
     app.jinja_env.filters['prettyjson'] = _jinja2_filter_prettyjson
     app.jinja_env.filters['sn'] = _jinja2_filter_supress_none
 
+    # Add errorhandler
+    from doifetcher.errorhandler import register_errorhandlers 
+    register_errorhandlers(app)
+    
     # Add frontpage
     @app.route('/')
     def welcome_page():
