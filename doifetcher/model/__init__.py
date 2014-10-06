@@ -15,15 +15,6 @@ def populate_example_data(app, db):
     db.create_all()
     db.session.commit()
 
-# Helper table for many-to-many relationships
-#article_to_author = db.Table('article_to_author',
-#        db.Column('article_id', db.Integer, db.ForeignKey('article.id', ondelete='cascade'),
-#            primary_key=True),
-#        db.Column('author_id', db.Integer, db.ForeignKey('author.id', ondelete='cascade'),
-#            primary_key=True),
-#        db.Column('author', db.relationship('Author')),
-#        db.Column('position', db.Integer))
-
 class Author(db.Model):
     """Represents an author of an article. Each author can author many articles."""
     __tablename__ = 'authors'
