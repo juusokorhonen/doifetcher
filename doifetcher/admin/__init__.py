@@ -29,7 +29,7 @@ class _DbView(ModelView):
         #print(column_list)
         #self.column_list = [key for (key,value) in column_list if (key not in self.excluded_columns)]
         #print(self.column_list)
-        print(self.get_list_columns())
+        #print(self.get_list_columns())
 
 class _ArticleDbView(_DbView):
     pass
