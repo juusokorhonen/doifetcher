@@ -20,12 +20,12 @@ class Author(db.Model):
     __tablename__ = 'authors'
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(4096))
-    first = db.Column(db.String(4096), nullable=False)
-    middle = db.Column(db.String(4096))
-    last = db.Column(db.String(4096), nullable=False)
-    suffix = db.Column(db.String(4096))
-    nickname = db.Column(db.String(4096))
+    title = db.Column(db.String(2048))
+    first = db.Column(db.String(2048), nullable=False)
+    middle = db.Column(db.String(2048))
+    last = db.Column(db.String(2048), nullable=False)
+    suffix = db.Column(db.String(2048))
+    nickname = db.Column(db.String(2048))
     mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
 
     def __repr__(self):
@@ -78,14 +78,14 @@ class Article(db.Model):
     __tablename__ = "articles"
 
     id = db.Column(db.Integer, primary_key=True)
-    doi = db.Column(db.String(4096))
-    title = db.Column(db.String(4096))
+    doi = db.Column(db.String(2048))
+    title = db.Column(db.String(2048))
     journal_id = db.Column(db.Integer, db.ForeignKey('journals.id'))
     journal = db.relationship('Journal',
             backref=db.backref('articles', lazy='dynamic'))
-    volume = db.Column(db.String(4096))
-    issue = db.Column(db.String(4096))
-    pages = db.Column(db.String(4096))
+    volume = db.Column(db.String(2048))
+    issue = db.Column(db.String(2048))
+    pages = db.Column(db.String(2048))
     pub_date = db.Column(db.DateTime)
     add_date = db.Column(db.DateTime)
     json_data = db.Column(db.Text)
@@ -111,8 +111,8 @@ class Journal(db.Model):
     __tablename__ = "journals"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(4096))
-    abbreviation = db.Column(db.String(4096))
+    name = db.Column(db.String(2048))
+    abbreviation = db.Column(db.String(2048))
     mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
 
     def __repr__(self):

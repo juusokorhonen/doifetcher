@@ -30,7 +30,15 @@ def export_all():
         if (request_wants_json()):
             return jsonify(articles)
         else:
-            listhtml = render_template('list_ordered_by_year.html', articles=articles)
+            export_formatter = u'list_ordered_by_year.html'
+            try:
+                exportformat = request.args.get('format', '')
+                if (exportformat == u'text_by_author'):
+                    export_formatter = u'text_ordered_by_author.html'
+            except KeyError:
+                pass
+            # Render the list
+            listhtml = render_template(export_formatter, articles=articles)
             return render_template('export_all.html', listhtml=listhtml)
     except TemplateNotFound:
         abort(404)
