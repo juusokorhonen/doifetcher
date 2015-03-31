@@ -1,3 +1,8 @@
+# Repository-specific ignores
+tmp/*
+db_repository
+*.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

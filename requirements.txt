@@ -16,3 +16,6 @@ chardet
 #MySQL-Python # Required for MySQL-connectivity
 #flask-admin
 flask-script
+flask-login
+flask-openid
+sqlalchemy-migrate

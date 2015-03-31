@@ -9,12 +9,6 @@ from sqlalchemy.ext.orderinglist import ordering_list
 
 db = SQLAlchemy() # db get bound to the app by using the init_app(app)-function
 
-def populate_example_data(app, db):
-    app.test_request_context().push()
-    db.drop_all()
-    db.create_all()
-    db.session.commit()
-
 class Author(db.Model):
     """Represents an author of an article. Each author can author many articles."""
     __tablename__ = 'authors'
@@ -121,3 +115,42 @@ class Journal(db.Model):
 
     def __unicode__(self):
         return self.__repr__()
+
+class User(db.Model):
+    """
+    A user is for logging into the system. A user can map to several authors.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    nickname = db.Column(db.String(128), index=True, unique=True)
+    email = db.Column(db.String(128), index=True, unique=True)
+    name = db.Column(db.String(1024))
+
+    def is_authenticated(self):
+        """
+        This method should return true unless the user is not allowed to be authenticated.
+        """
+        return True
+
+    def is_active(self):
+        """
+        This method should return true unless the user is inactive for some reason (banned?).
+        """
+        return True
+
+    def is_anonymous(self):
+        """
+        This method should return true only for fake users that are not supposed to log into the system.
+        """
+        return False
+
+    def get_id(self):
+        """
+        This method should return a unique id for a user in unicode format.
+        """
+        try:
+            return unicode(self.id)
+        except NameError:
+            return str(self.id) # python 3
+
+    def __repr__(self):
+        return "<User %r>" % (self.nickname)

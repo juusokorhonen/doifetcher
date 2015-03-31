@@ -2,8 +2,8 @@
 from __future__ import (absolute_import, division, print_function, unicode_literals)
 from flask_wtf import Form
 import wtforms
-from wtforms import StringField, TextAreaField, IntegerField, HiddenField, ValidationError, SubmitField, FormField, FieldList, validators
-from wtforms.validators import Required, Optional, Regexp
+from wtforms import StringField, TextAreaField, IntegerField, HiddenField, ValidationError, SubmitField, FormField, FieldList, BooleanField, validators
+from wtforms.validators import Required, Optional, Regexp, DataRequired
 import re
 
 class AuthorForm(wtforms.Form):
@@ -41,3 +41,7 @@ class AddArticleForm(Form):
     json_field = HiddenField(u"JSON data", validators=[Optional()])
     fetch_doi = SubmitField()
     save = SubmitField()
+
+class LoginForm(Form):
+    openid = StringField('openid', validators=[DataRequired()])
+    remember_me = BooleanField('remember_me', default=False)

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{super()}}
+<link href="{{ url_for('.static', filename='css/jquery-ui.min.css') }}" rel="stylesheet" media="screen">
+<link href="{{ url_for('.static', filename='css/jquery-ui.structure.min.css') }}" rel="stylesheet" media="screen">
+<link href="{{ url_for('.static', filename='css/jquery-ui.theme.min.css') }}" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script type="text/javascript">
+function set_openid(openid, pr) {
+	u = openid.search('<username>');
+	if (u != -1) {
+		// openid requres username
+		user = prompt('Enter your ' + pr + ' username:');
+		openid = openid.substr(0, u) + user;
+	}
+	form = document.forms['login'];
+	form.elements['openid'].value = openid;
+}
+</script>
+{% endblock %}
+
+
+{% block contentbody %}
+	<h2>Sign in</h2>
+
+	<form action="" method="post" name="login">
+		{{ form.hidden_tag() }}
+		<p>
+		Please enter your OpenID, or select one of the providers below:<br />
+		{{ form.openid(size=80) }}<br />
+		{% for error in form.openid.errors %}
+			<span style="color: red;">[{{ error }}]</span>
+		{% endfor %}<br />
+		{% for pr in providers %}
+			<a class="btn btn-primary" role="button" href="#" onClick="set_openid('{{ pr.url }}', {{ pr.name }}');">{{ pr.name }}</a> 
+		{% endfor %}
+		</p>
+		<p>{{ form.remember_me }} Remember me</p>
+		<p><input type="submit" value="Sign in"></p>
+	</form>
+
+{% endblock %}
+
+{% block marketing %}
+
+{% endblock %}

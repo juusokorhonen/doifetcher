@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function, unicode_literals)
-from flask import Flask, url_for, render_template, abort
+
+from flask import Flask, url_for, render_template, abort, flash, redirect, session, request, g
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask_wtf.csrf import CsrfProtect
+from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
+from flask.ext.openid import OpenID
 from jinja2 import TemplateNotFound
 from server.forms import AddArticleForm
 from datetime import datetime
+import os
 import json
 import pprint
 
@@ -28,6 +32,16 @@ def create_app(config=None, configfile=None):
     # Enable CSRF protection (not really sure if this is needed or not - it's needed for views without forms)
     CsrfProtect(app)
     
+    # Enable login and openid
+    from server.login import login, lm, oid
+    app.register_blueprint(login)
+    lm.init_app(app)
+    lm.login_view = 'login'
+    oid.init_app(app)
+    @app.before_request
+    def before_request():
+        g.user = current_user
+
     # Import Blueprints
     from server.simple import simple # Use Blueprints
     app.register_blueprint(simple) # register Frontend blueprint
