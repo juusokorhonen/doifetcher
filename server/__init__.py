@@ -5,7 +5,7 @@ from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask_wtf.csrf import CsrfProtect
 from jinja2 import TemplateNotFound
-from doifetcher.forms import AddArticleForm
+from server.forms import AddArticleForm
 from datetime import datetime
 import json
 import pprint
@@ -29,20 +29,18 @@ def create_app(config=None, configfile=None):
     CsrfProtect(app)
     
     # Import Blueprints
-    from doifetcher.simple import simple # Use Blueprints
+    from server.simple import simple # Use Blueprints
     app.register_blueprint(simple) # register Frontend blueprint
 
-    from doifetcher.batch import batch
-    app.register_blueprint(batch)
-    from doifetcher.export import export
+    from server.export import export
     app.register_blueprint(export)
     
     # Import database model
-    from doifetcher.model import db
+    from database.model import db
     db.init_app(app)
 
     # Admin interface
-    from doifetcher.admin import admin_section
+    from server.admin import admin_section
     admin_section.init_app(app)
     admin_section.init_db(db)
     admin_section.name = u"{} :: {}".format(app.config.get('SITE_TITLE', 'DOI Fetcher'), u"Admin Interface")
@@ -50,8 +48,7 @@ def create_app(config=None, configfile=None):
     
     # Development-specific functions 
     if (app.debug):
-        from doifetcher.model import populate_example_data
-        #populate_example_data(app,db)
+        pass
     # Testing-specifig functions
     if (app.config.get('TESTING')):
         pass
@@ -64,7 +61,7 @@ def create_app(config=None, configfile=None):
     app.jinja_env.filters['sn'] = _jinja2_filter_supress_none
 
     # Add errorhandler
-    from doifetcher.errorhandler import register_errorhandlers 
+    from server.errorhandler import register_errorhandlers 
     register_errorhandlers(app)
     
     # Add frontpage

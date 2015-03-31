@@ -3,7 +3,7 @@ from __future__ import (absolute_import, division, print_function, unicode_liter
 from flask import Flask, Blueprint, current_app, request, render_template, redirect, flash, url_for, abort
 from jinja2 import TemplateNotFound
 from flask_bootstrap import Bootstrap
-from doifetcher.model import Article, Author, Journal
+from database.model import Article, Author, Journal
 
 export = Blueprint(u'export', __name__, template_folder='templates', static_folder='static', static_url_path='/static/export')
 

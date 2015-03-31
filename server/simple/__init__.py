@@ -8,9 +8,9 @@ from flask_wtf import Form
 from wtforms import TextField, TextAreaField, HiddenField, ValidationError, SubmitField, FormField, FieldList, validators
 from wtforms.validators import Required, Optional
 import re
-from doifetcher.forms import *
-from doifetcher.model import *
-import doifetcher.model as model
+from server.forms import *
+from database.model import *
+import database.model as model
 from datetime import datetime
 import requests
 import json

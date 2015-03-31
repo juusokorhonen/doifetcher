@@ -3,7 +3,7 @@ from __future__ import (absolute_import, unicode_literals, print_function, divis
 
 from flask.ext.script import Manager, Server
 
-from doifetcher import create_app
+from server import create_app
 from flask import url_for
 from config import Config, DevelopmentConfig, TestingConfig, ProductionConfig
 

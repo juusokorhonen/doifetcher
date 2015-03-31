@@ -4,7 +4,7 @@ from flask import Flask, Blueprint, current_app, request, render_template, redir
 from jinja2 import TemplateNotFound
 from flask.ext.superadmin import Admin, BaseView, expose, model
 #from flask.ext.superadmin.contrib.sqla import ModelView
-from doifetcher.model import Article, Author, Journal
+from database.model import Article, Author, Journal
 
 admin_section = Admin()
 
