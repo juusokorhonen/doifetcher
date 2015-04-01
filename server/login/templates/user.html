@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{super()}}
+<link href="{{ url_for('login.static', filename='css/jquery-ui.min.css') }}" rel="stylesheet" media="screen">
+<link href="{{ url_for('login.static', filename='css/jquery-ui.structure.min.css') }}" rel="stylesheet" media="screen">
+<link href="{{ url_for('login.static', filename='css/jquery-ui.theme.min.css') }}" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block contentbody %}
+	<h2>User profile</h2>
+
+	<div class="panel panel-primary">
+		{% if user.name %}<div class="panel-heading">{{ user.name }}</div>{% endif %}
+		<table class="table">
+			<tr>
+				<th>Nickname</th>
+				<td>{{ user.nickname }}</td>
+			</tr>
+			<tr>
+				<th>User ID</th>
+				<td>{{ user.id }}</td>
+			</tr>
+			<tr>
+				<th>Email</th>
+				<td>{{ user.email }}</td>
+			</tr>
+			<tr>
+				<th>OpenID URL</th>
+				<td>{{ user.openid }}</td>
+			</tr>
+			<tr>
+				<th>User level</th>
+				<td>{% if user.admin %}Administrator{% else %}Regular user{% endif %}</td>
+			</tr>
+		</table>
+	</div>
+
+{% endblock %}
+
+{% block marketing %}
+
+{% endblock %}

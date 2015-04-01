@@ -8,7 +8,7 @@
 {{super()}}
 {% endblock %}
 
-{% block title %}DOIFetcher{% endblock %}
+{% block title %}{{ config.SITE_TITLE|safe or 'DOI Fetcher' }}{% endblock %}
 
 {% block styles %}
 {{super()}}
@@ -114,7 +114,19 @@ $('ul.nav a').filter(function() {
         <li><a href="{{ url_for('welcome_page') }}"><span class="glyphicon glyphicon-home"></span> Start</a></li>
 				<li><a href="{{ url_for('simple.add') }}"><span class="glyphicon glyphicon-plus-sign"></span> Add one</a></li>
 				<li><a href="{{ url_for('export.export_welcome') }}"><span class="glyphicon glyphicon-export"></span> Export</a></li>
-				<li><a class="text-danger" href="{{ url_for('admin.index') }}"><span class="glyphicon glyphicon-lock"></span> Admin</a></li>
+				{% if g.user.is_authenticated() %}
+				<li class="dropdown">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="glyphicon glyphicon-user"></span> {% if g.user.name %}{{ g.user.name }}{% else %}{{ g.user.nickname }}{% endif %}<span class="caret"></span></a>
+					<ul class="dropdown-menu" role="menu">
+						<li><a href="{{ url_for('login.profile_page', nickname=g.user.nickname) }}">Profile</a></li>
+						<li><a href="{{ url_for('admin.index') }}">Administer database</a></li>
+						<li class="divider"></li>
+						<li><a href="{{ url_for('login.logout_page') }}">Sign out</a></li>
+					</ul>
+				</li>
+				{% else %}
+				<li><a href="{{ url_for('login.login_page') }}"><span class="glyphicon glyphicon-lock"></span> Sign in</a></li>
+				{% endif %}
     </ul>
 {% endblock %}
 

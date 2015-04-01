@@ -36,7 +36,7 @@ def create_app(config=None, configfile=None):
     from server.login import login, lm, oid
     app.register_blueprint(login)
     lm.init_app(app)
-    lm.login_view = 'login'
+    lm.login_view = 'login.login_page'
     oid.init_app(app)
     @app.before_request
     def before_request():
