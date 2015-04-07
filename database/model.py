@@ -36,7 +36,7 @@ class User(db.Model):
         """
         This method should return true unless the user is not allowed to be authenticated.
         """
-        return True
+        return True 
 
     def is_active(self):
         """
@@ -65,6 +65,9 @@ class User(db.Model):
         """
         return self.admin
 
+    def __unicode__(self):
+        return self.nickname
+
     def __repr__(self):
         return "<User %r>" % (self.nickname)
     
@@ -91,7 +94,12 @@ class Author(db.Model):
     last = db.Column(db.String(4096), nullable=False)
     suffix = db.Column(db.String(4096))
     nickname = db.Column(db.String(4096))
-    mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
+    if (db_type() == 'sqlite'):
+        mod_date = db.Column(db.TIMESTAMP, nullable=False)
+    else:
+        mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User', backref=db.backref('authors', lazy='dynamic'))
 
     def __repr__(self):
         return u"<Author {}, {} {}>".format(self.last, self.first, self.middle)
@@ -166,14 +174,22 @@ class Article(db.Model):
     else:
         mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
     inserter_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    inserter = db.relationship('User', backref=db.backref('articles', lazy='dynamic'))
+    inserter = db.relationship('User', backref=db.backref('added_articles', lazy='dynamic'))
 
     def __repr__(self):
         #return '<Article %r>' % self.doi
         return u'{}'.format(self.title)
 
     def __unicode__(self):
-        return self.__repr__()
+        if self.journal.abbreviation is not None:
+            journal = self.journal.abbreviation[:10] if len(self.journal.abbreviation) > 10 else self.journal.abbreviation
+        elif self.journal.name is not None:
+            journal = self.journal.name[:10] if len(self.journal.name) > 10 else self.journal.name
+        else:
+            journal = ""
+
+        title = (self.title[:20] + "..") if len(self.title) > 20 else self.title
+        return "{}: {}".format(journal, title)
 
 class Journal(db.Model):
     """Represents a (scientific) journal, which has a name and an optional abbreviation."""

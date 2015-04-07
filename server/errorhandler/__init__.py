@@ -6,7 +6,12 @@ from flask_bootstrap import Bootstrap
 from database.model import db
 
 def register_errorhandlers(app):
-  
+ 
+    @app.errorhandler(403)
+    def forbidden_page(error):
+        flash('Please login to see the admin pages.')
+        return redirect(url_for('login.login_page'))
+
     @app.errorhandler(404)
     def page_not_found(error):
         return render_template('page_not_found.html'), 404

@@ -30,7 +30,7 @@ def create_app(config=None, configfile=None):
     Bootstrap(app) # Use flask-bootstrap
     
     # Enable CSRF protection (not really sure if this is needed or not - it's needed for views without forms)
-    CsrfProtect(app)
+    #CsrfProtect(app)
     
     # Enable login and openid
     from server.login import login, lm, oid
