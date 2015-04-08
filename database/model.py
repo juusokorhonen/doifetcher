@@ -175,6 +175,7 @@ class Article(db.Model):
         mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
     inserter_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     inserter = db.relationship('User', backref=db.backref('added_articles', lazy='dynamic'))
+    inserter_ip = db.Column(db.String(128))
 
     def __repr__(self):
         #return '<Article %r>' % self.doi
@@ -182,14 +183,18 @@ class Article(db.Model):
 
     def __unicode__(self):
         if self.journal.abbreviation is not None:
-            journal = self.journal.abbreviation[:10] if len(self.journal.abbreviation) > 10 else self.journal.abbreviation
+            journal = self.journal.abbreviation
         elif self.journal.name is not None:
-            journal = self.journal.name[:10] if len(self.journal.name) > 10 else self.journal.name
+            journal = self.journal.name
         else:
             journal = ""
 
-        title = (self.title[:20] + "..") if len(self.title) > 20 else self.title
-        return "{}: {}".format(journal, title)
+        year = self.pub_date.year
+        if year is not None:
+            year = "({}) ".format(year)
+
+        title = self.title
+        return "{}{}: {}".format(year, journal, title)
 
 class Journal(db.Model):
     """Represents a (scientific) journal, which has a name and an optional abbreviation."""

@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function, unicode_literals)
 
-from flask import Flask, Blueprint, current_app, request, render_template, redirect, flash, url_for, abort
+from flask import Flask, Blueprint, current_app, request, render_template, redirect, flash, url_for, abort, request
 from jinja2 import TemplateNotFound
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask_wtf import Form
 from wtforms import TextField, TextAreaField, HiddenField, ValidationError, SubmitField, FormField, FieldList, validators
 from wtforms.validators import Required, Optional
+from flask.ext.login import login_required, current_user
 import re
 from server.forms import *
 from database.model import *
@@ -227,7 +228,7 @@ def add():
                     # Process authors into the database format
                     author_form = form.authors_fieldlist.pop_entry()
                     #print(author_form)
-                    author_data = {u'first': author_form.firstname.data, u'middle': author_form.middlename.data, u'last': author_form.lastname.data}
+                    author_data = {u'first': author_form.firstname.data, u'middle': author_form.middlename.data, u'last': author_form.lastname.data, 'mod_date': datetime.now()}
                     #print(author_data)
                     author = Author(**author_data)
                     possible_matches = Author.query.filter_by(last=author.last, first=author.first)
@@ -328,6 +329,14 @@ def add():
                 # If article was not found in the database
                 if article is None:
                     add_date = datetime.now()
+                    mod_date = add_date
+                    if current_user.is_authenticated():
+                        inserter = current_user
+                        inserter_ip = None
+                    else:
+                        inserter = None
+                        inserter_ip = request.remote_addr
+
                     article = Article(
                             doi=doi,
                             title=title,
@@ -336,7 +345,10 @@ def add():
                             pages=pages,
                             pub_date=pub_date,
                             add_date=add_date,
+                            mod_date=mod_date,
                             journal=journal,
+                            inserter=inserter,
+                            inserter_ip=inserter_ip,
                             authors=[author for (author,new) in authors]) # author contains tuples of the form: (author, new)
                     if json_data:
                         article.json_data=json.dumps(json_data)
