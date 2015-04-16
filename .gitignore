@@ -2,6 +2,9 @@
 tmp/*
 db_repository
 *.db
+# config.py is not included in the repo, because it contains site specific information
+# an example config is provided instead
+config.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

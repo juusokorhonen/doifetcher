@@ -6,7 +6,6 @@ from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask_wtf.csrf import CsrfProtect
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
-from flask.ext.openid import OpenID
 from jinja2 import TemplateNotFound
 from server.forms import AddArticleForm
 from datetime import datetime
@@ -33,11 +32,10 @@ def create_app(config=None, configfile=None):
     #CsrfProtect(app)
     
     # Enable login and openid
-    from server.login import login, lm, oid
+    from server.login import login, lm
     app.register_blueprint(login)
     lm.init_app(app)
     lm.login_view = 'login.login_page'
-    oid.init_app(app)
     @app.before_request
     def before_request():
         g.user = current_user

@@ -4,57 +4,82 @@ from __future__ import (absolute_import, division, print_function, unicode_liter
 from flask import Flask, Blueprint, current_app, request, render_template, redirect, flash, url_for, abort, redirect, session, g, current_app
 from jinja2 import TemplateNotFound
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
-from flask.ext.openid import OpenID
-
 from server.forms import *
-from database.model import db, User
+from database.model import db, User, OAuthUser
+from .oauth import *
 
 login = Blueprint(u'login', __name__, template_folder='templates', static_folder='static', static_url_path='/static/login')
 
 # Initialize login manager and openid
 lm = LoginManager()
-oid = OpenID()
 
 @lm.user_loader
 def load_user(id):
     return User.query.get(int(id))
 
-@login.route('/login', methods=['GET','POST'])
-@oid.loginhandler
+@login.route('/authorize/<provider>')
+def oauth_authorize(provider):
+    # TODO: this function is likely to fail if an incorrect provider is supplied
+    if not current_user.is_anonymous():
+        flash('Already logged in!')
+        return redirect(url_for('welcome_page'))
+    oauth = OAuthSignIn.get_provider(provider)
+    return oauth.authorize()
+
+@login.route('/callback/<provider>')
+def oauth_callback(provider):
+    if current_app.debug:
+        print("OAuth Callback called with provider : {}".format(provider))
+
+    if not current_user.is_anonymous():
+        flash('Already logged in!')
+        return redirect(url_for('welcome_page'))
+
+    oauth = OAuthSignIn.get_provider(provider)
+    oauth_data = oauth.callback()
+
+    if oauth_data.get('id') is None:
+        flash('Authentication failed!', category='warning')
+        return redirect(url_for('welcome_page'))
+    
+    nickname = oauth_data.get('nickname')
+    email = oauth_data.get('email')
+    if nickname is None or nickname == '':
+        if email is None or email == '':
+            # We have neither email nor nickname: ABORT!
+            return error(500)
+        nickname = email.split('@')[0]
+
+    # TODO: The following fails if there are more than one oauth_id (should not happen, since unique field)
+    oauthuser = OAuthUser.query.filter_by(provider=oauth_data.get('provider')).filter_by(oauth_id=oauth_data.get('id')).first()
+    if not oauthuser:
+        # If oauthuser was not found, we check whether we can match email and nickname to an existing use (potential security hazard!)
+        user = User.query.filter_by(nickname=nickname).filter_by(email=email).first()
+        if not user:
+            user = User(nickname=nickname, email=email)
+            db.session.add(user)
+
+        oauthuser = OAuthUser(provider=oauth_data.get('provider'), oauth_id=oauth_data.get('id'), user=user)
+        db.session.add(oauthuser)
+        db.session.commit()
+
+    else:
+        user = oauthuser.user
+
+    login_user(user, remember=True)
+
+    flash('Login successful.')
+    return redirect(url_for('welcome_page'))
+
+@login.route('/login', methods=['GET'])
 def login_page():
     if g.user is not None and g.user.is_authenticated():
+        flash('User already logged in')
         return redirect(url_for('welcome_page'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        session['remember_me'] = form.remember_me.data
-        return oid.try_login(form.openid.data, ask_for=['nickname', 'email'], ask_for_optional=['fullname'])
-    return render_template('login.html',
-            next=oid.get_next_url(),
-            error=oid.fetch_error(),
-            title='Sign in',
-            form=form,
-            providers=current_app.config['OPENID_PROVIDERS'])
 
-@oid.after_login
-def after_login(resp):
-    if resp.email is None or resp.email == "":
-        flash("Invalid login. Please try again.")
-        return redirect(url_for('login_page'))
-    user = User.query.filter_by(email=resp.email).first()
-    if user is None:
-        nickname = resp.nickname
-        if nickname is None or nickname == "":
-            nickname = resp.email.split('@')[0]
-        user = User(nickname=User.make_unique_nickname(nickname), email=resp.email, openid=resp.identity_url, name=resp.fullname)
-        db.session.add(user)
-        db.session.commit()
-    remember_me = False
-    if 'remember_me' in session:
-        remember_me = session['remember_me']
-        session.pop('remember_me', None)
-    login_user(user, remember = remember_me)
-    flash ("Login successful.")
-    return redirect(oid.get_next_url() or url_for('welcome_page'))
+    return render_template('login.html',
+            title='Sign in',
+            providers=current_app.config['OAUTH_CREDENTIALS'])
 
 @login.route('/logout')
 def logout_page():
@@ -76,3 +101,5 @@ def profile_page(nickname):
         return render_template('user.html', user=user)
     except TemplateNotFound:
         abort(500)
+
+

@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function, unicode_liter
 import re
 from flask import Flask, current_app
 from flask_sqlalchemy import SQLAlchemy
+from flask.ext.login import UserMixin
 from datetime import datetime
 from nameparser import HumanName
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -19,16 +20,15 @@ def db_type():
     m = re.search('^(\w+)', Config.SQLALCHEMY_DATABASE_URI)
     return m.group(0)
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     """
     A user is for logging into the system. A user can map to several authors.
     """
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    openid = db.Column(db.String(256), index=True, unique=True)
-    nickname = db.Column(db.String(128), index=True, unique=True)
-    email = db.Column(db.String(128), index=True, unique=True)
+    nickname = db.Column(db.String(128), nullable=False)
+    email = db.Column(db.String(128))
     name = db.Column(db.String(1024))
     admin = db.Column(db.Boolean, default=False)
 
@@ -70,7 +70,7 @@ class User(db.Model):
 
     def __repr__(self):
         return "<User %r>" % (self.nickname)
-    
+   
     @staticmethod
     def make_unique_nickname(nickname):
         if User.query.filter_by(nickname=nickname).first() is None:
@@ -82,6 +82,16 @@ class User(db.Model):
                 break
             version += 1
         return new_nickname
+
+class OAuthUser(db.Model):
+    """
+    Represents a mapping of User to a OAuth provider.
+    """
+    __tablename__ = 'oauthusers'
+    oauth_id = db.Column(db.String(257), unique=False, primary_key=True)
+    provider = db.Column(db.String(128), unique=False, primary_key=True)
+    user_id  = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User', backref=db.backref('oauths', lazy='dynamic'))
 
 class Author(db.Model):
     """Represents an author of an article. Each author can author many articles."""

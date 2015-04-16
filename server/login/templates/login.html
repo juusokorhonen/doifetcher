@@ -7,56 +7,15 @@
 <link href="{{ url_for('login.static', filename='css/jquery-ui.theme.min.css') }}" rel="stylesheet" media="screen">
 {% endblock %}
 
-{% block scripts %}
-{{super()}}
-<script>
-function set_openid(openid, pr) {
-	u = openid.search('<username>');
-	if (u != -1) {
-		// openid requires username
-		user = prompt('Enter your ' + pr + ' username:');
-		openid = openid.substr(0, u) + user;
-	}
-	form = document.forms['login'];
-	form.elements['openid'].value = openid;
-}
-</script>
-{% endblock %}
-
-
 {% block contentbody %}
 	<h2>Sign in</h2>
 
-	<form class="form" action="" method="post" name="login">
-		{{ form.hidden_tag() }}
-		<div class="help-block">Please select your OpenID provider:</div>
+		<div class="help-block">Please select your OAuth provider:</div>
 		<div class="control-group">
-			{% for pr in providers %}
-				<a href="#" onClick="set_openid('{{ pr.url }}', '{{ pr.name }}');"><img src="{{ url_for('login.static', filename='img/'+pr.name.lower()+'.png') }}" class="img-polaroid" style="margin:2px;" /></a>
+			{% for pr,val in providers.items() %}
+			<a href="{{ url_for('login.oauth_authorize', provider=pr) }}"><img src="{{ url_for('login.static', filename='img/'+pr+'.png') }}" class="img-polaroid" style="margin:2px;" /></a>
 			{% endfor %}
 		</div>
-		<div class="control-group{% if form.openid.errors %} error{% endif %}">
-			<label class="control-label" for="openid">Manual OpenID:</label>
-			<div class="controls">
-				{{ form.openid(size=80, class="span4") }}
-				{% for error in form.openid.errors %}
-					<span class="help-inline">[{{ error }}]</span><br />
-				{% endfor %}
-			</div>
-		</div>
-		<div class="control-group">
-			<div class="controls">
-				<label class="checkbox" for="remember_me">
-					{{ form.remember_me }} Remember login
-				</label>
-			</div>
-		</div>
-		<div class="control-group">
-			<div class="controls">
-				<input class="btn btn-primary" type="submit" value="Sign in">
-			</div>
-		</div>
-	</form>
 
 {% endblock %}
 

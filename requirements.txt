@@ -19,3 +19,5 @@ flask-script
 flask-login
 flask-openid
 sqlalchemy-migrate
+urllib3
+rauth
