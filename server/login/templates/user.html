@@ -26,8 +26,8 @@
 				<td>{{ user.email }}</td>
 			</tr>
 			<tr>
-				<th>OpenID URL</th>
-				<td>{{ user.openid }}</td>
+				<th>OAuth providers</th>
+				<td>{% for pr in user.oauths %}{{ pr.provider }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
 			</tr>
 			<tr>
 				<th>User level</th>

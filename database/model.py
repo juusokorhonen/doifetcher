@@ -27,8 +27,8 @@ class User(UserMixin, db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    nickname = db.Column(db.String(128), nullable=False)
-    email = db.Column(db.String(128))
+    email = db.Column(db.String(256), unique=True, nullable=False)
+    nickname = db.Column(db.String(128))
     name = db.Column(db.String(1024))
     admin = db.Column(db.Boolean, default=False)
 
@@ -66,10 +66,12 @@ class User(UserMixin, db.Model):
         return self.admin
 
     def __unicode__(self):
-        return self.nickname
+        if (self.name is not None and self.name != ''):
+            return "{} ({})".format(self.name, self.email)
+        return self.email
 
     def __repr__(self):
-        return "<User %r>" % (self.nickname)
+        return "<User %r>" % (self.email)
    
     @staticmethod
     def make_unique_nickname(nickname):
@@ -88,10 +90,18 @@ class OAuthUser(db.Model):
     Represents a mapping of User to a OAuth provider.
     """
     __tablename__ = 'oauthusers'
-    oauth_id = db.Column(db.String(257), unique=False, primary_key=True)
-    provider = db.Column(db.String(128), unique=False, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    oauth_id = db.Column(db.String(257), nullable=False)
+    provider = db.Column(db.String(128), nullable=False)
     user_id  = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref=db.backref('oauths', lazy='dynamic'))
+    __table_args__ = (db.UniqueConstraint('provider', 'oauth_id', name='_unique_oauth_id'),)
+
+    def __unicode__(self):
+        return "{} @ {}".format(self.oauth_id, self.provider)
+
+    def __repr__(self):
+        return "<OAuthUser %r @ %r>" % (self.oauth_id, self.provider)
 
 class Author(db.Model):
     """Represents an author of an article. Each author can author many articles."""
@@ -153,7 +163,6 @@ class ArticleAuthor(db.Model):
 
     article_id = db.Column(db.Integer, db.ForeignKey('articles.id'), primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey('authors.id'), primary_key=True)
-    author = db.relationship('Author')
     position = db.Column(db.Integer)
 
 class Article(db.Model):
@@ -172,13 +181,9 @@ class Article(db.Model):
     pub_date = db.Column(db.DateTime)
     add_date = db.Column(db.DateTime)
     json_data = db.Column(db.Text)
-    _authors = db.relationship('ArticleAuthor',
-            order_by='ArticleAuthor.position',
-            collection_class=ordering_list('position'),
-            cascade='all, delete-orphan',
-            backref=db.backref('articles', lazy='joined'))
-    authors = association_proxy('_authors', 'author',
-            creator=lambda _a: ArticleAuthor(author=_a))
+    # TODO: CASCADING FAILS WITH ADMIN INTERFACE
+    authors = db.relationship("Author", secondary='article_authors', backref=db.backref('articles'), cascade='all,delete')
+
     if (db_type() == 'sqlite'):
         mod_date = db.Column(db.TIMESTAMP, nullable=False)
     else:

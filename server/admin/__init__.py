@@ -6,36 +6,43 @@ from flask.ext.superadmin import Admin, BaseView, expose, model, AdminIndexView
 from flask.ext.superadmin.contrib.sqlamodel import ModelView
 from flask.ext.login import login_required, current_user
 #from flask.ext.superadmin.contrib.sqla import ModelView
-from database.model import Article, Author, Journal, User
+from database.model import Article, Author, Journal, User, OAuthUser
 
 
-class JKAdminView(AdminIndexView):
+class _AdminView(AdminIndexView):
     @expose('/')
     def index(self):
         if current_app.debug:
-            print("JKAdminView index hit.")
+            print("_AdminView index hit.")
         return self.render('admin/index.html')
 
     def is_accessible(self):
         if current_app.debug:
-            print("is_accessible() at JKAdminView hit with user {}".format(current_user))
+            print("is_accessible() at _AdminView hit with user {}".format(current_user))
         return current_user.is_authenticated()
 
-class JKDbModel(model.ModelAdmin):
+class _DbModel(model.ModelAdmin):
     def is_accessible(self):
         if current_app.debug:
-            print("is_accessible() at JKDbModel hit with user {}".format(current_user))
+            print("is_accessible() at _DbModel hit with user {}".format(current_user))
         return current_user.is_authenticated()
 
-admin_section = Admin(index_view=JKAdminView())
+class _AdminDbModel(_DbModel):
+    def is_accessible(self):
+        if current_app.debug:
+            print("is_accessible() at _AdminDbModel hit with use {}".format(current_user))
+        return current_user.is_authenticated() and current_user.is_admin()
+
+admin_section = Admin(index_view=_AdminView())
 
 import types
 # Initialize database connection
 def init_db(self, db):
-    self.register(Article, JKDbModel, session=db.session)
-    self.register(Author, JKDbModel, session=db.session)
-    self.register(Journal, JKDbModel, session=db.session)
-    self.register(User, JKDbModel, session=db.session)
+    self.register(Article, _DbModel, session=db.session)
+    self.register(Author, _DbModel, session=db.session)
+    self.register(Journal, _DbModel, session=db.session)
+    self.register(User, _AdminDbModel, session=db.session)
+    self.register(OAuthUser, _AdminDbModel, session=db.session)
 
 # Bind the method to the object
 admin_section.init_db = types.MethodType(init_db, admin_section)

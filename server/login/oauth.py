@@ -38,78 +38,6 @@ class OAuthSignIn(object):
                 self.providers[provider.provider_name] = provider
         return self.providers[provider_name]
 
-class FacebookSignIn(OAuthSignIn):
-    _name = 'facebook'
-    def __init__(self):
-        super(FacebookSignIn, self).__init__(self._name)
-        self.service = OAuth2Service(
-                name = self._name,
-                client_id = self.consumer_id,
-                client_secret = self.consumer_secret,
-                authorize_url = current_app.config['OAUTH_CREDENTIALS'][self._name]['authorize_url'],
-                access_token_url = current_app.config['OAUTH_CREDENTIALS'][self._name]['access_token_url'],
-                base_url = current_app.config['OAUTH_CREDENTIALS'][self._name]['base_url']
-                )
-    def authorize(self):
-        return redirect(self.service.get_authorize_url(
-            scope='email',
-            response_type='code',
-            redirect_uri=self.get_callback_uri())
-            )
-
-    def callback(self):
-        if 'code' not in request.args:
-            return None, None, None
-        oauth_session = self.service.get_auth_session(
-            data = {
-                'code': request.args['code'],
-                'grant_type': 'authorization_code',
-                'redirect_uri': self.get_callback_url()}
-            )
-        authuser = oauth_session.get('me').json()
-        return {
-                'provider': self._name,
-                'id': authuser['id'],
-                'nickname': authuser.get('email').split('@')[0], # Facebook does not provide email, so we strip the email instead
-                'email': authuser.get('email')
-            }
-
-
-class TwitterSignIn(OAuthSignIn):
-    _name = 'twitter'
-    def __init__(self):
-        super(TwitterSignIn, self).__init__(self._name)
-        self.service = OAuth1Service(
-                name = self._name,
-                consumer_key = self.consumer_id,
-                consumer_secret = self.consumer_secret,
-                request_token_url = current_app.config['OAUTH_CREDENTIALS'][self._name]['request_token_url'],
-                authorize_url = current_app.config['OAUTH_CREDENTIALS'][self._name]['authorize_url'],
-                access_token_url = current_app.config['OAUTH_CREDENTIALS'][self._name]['access_token_url'],
-                base_url = current_app.config['OAUTH_CREDENTIALS'][self._name]['base_url']
-                )
-
-    def authorize(self):
-        request_token = self.service.get_request_token(
-            params={'oauth_callback': self.get_callback_url()}
-            )
-        session['request_token'] = request_token
-        return redirect(self.service.get_authorize_url(request_token[0]))
-
-    def callback(self):
-        request_token = session.pop('request_token')
-        if 'oauth_verifier' not in request.args:
-            return None, None, None
-        authuser = oauth_session.get('account/verify_credentials.json').json()
-        oauth_id = str(authuser.get('id'))
-        username = authuser.get('screen_name')
-        return {
-                'provider': self._name,
-                'id': oauth_id,
-                'nickname': username, 
-                'email': None # Twitter does not provide email, hence None
-                }
-
 class GoogleSignIn(OAuthSignIn):
     _name = 'google'
     def __init__(self):
@@ -147,14 +75,15 @@ class GoogleSignIn(OAuthSignIn):
 
     def authorize(self):
         return redirect(self.service.get_authorize_url(
-            scope = 'profile',
+            scope = 'openid email profile',
             response_type = 'code',
             redirect_uri = self.get_callback_url())
             )
 
     def callback(self):
         if 'code' not in request.args:
-            return None, None, None
+            return {'authenticated': False} 
+
         oauth_session = self.service.get_auth_session(
                 data = {'code': request.args['code'],
                     'grant_type': 'authorization_code',
@@ -170,12 +99,19 @@ class GoogleSignIn(OAuthSignIn):
                 print("{} : {}".format(k, v))
 
         authuser = oauth_session.get('').json()
-        oauth_id = str(authuser.get('id'))
+        oauth_id = str(authuser.get('sub'))
+        email = authuser.get('email')
+        nickname = email.split('@')[0]
+        name = authuser.get('name')
+        verified = (authuser.get('email_verified') or authuser.get('email_verified') == 'True')
 
         return {
+                'authenticated': True,
+                'verified': verified,
                 'provider': self._name,
                 'id': oauth_id,
-                'nickname': authuser['name'], 
-                'email': authuser['email']
+                'nickname': nickname, 
+                'email': email,
+                'name': name
             }
 

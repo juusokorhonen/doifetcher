@@ -9,10 +9,6 @@ class Config(object):
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'test.db')
     SQLALCHEMY_MIGRATE_REPO = os.path.join(BASE_DIR, 'db_repository')
-    OPENID_PROVIDERS = [
-            {'name': 'Google', 'url': 'https://www.google.com/accounts/o8/id'},
-            {'name': 'MyOpenID', 'url': 'https://www.myopenid.com'},
-            {'name': 'LinkedIn', 'url': 'https://www.linkedin.com/uas/oauth2/authorization'}]
     OAUTH_CREDENTIALS = {
             'google': {
                 'name': 'Google', 
@@ -24,34 +20,7 @@ class Config(object):
                 'configuration_url': 'https://accounts.google.com/.well-known/openid-configuration',
                 'always_use_defaults': False
                 },
-            'facebook': {
-                'name': 'Facebook', 
-                'id': 'INSERT_ID_HERE',
-                'secret': 'INSERT_SECRET_HERE',
-                'authorize_url': 'https://graph.facebook.com/oauth/authorize',
-                'base_url': 'https://graph.facebook.com/',
-                'access_token_url': 'https://graph.facebook.com/oauth_access_token',
-                'configuration_url': None,
-                'always_use_defaults': False
-                },
-            'twitter': {
-                'name': 'Twitter',
-                'id': 'INSERT_ID_HERE',
-                'secret': 'INSERT_SECRET_HERE',
-                'request_token_url': 'https://api.twitter.com/oauth/request_token',
-                'authorize_url': 'https://api.twitter.com/oauth/authenticate',
-                'base_url': 'https://api.twitter.com/1.1/',
-                'access_token_url': 'https://api.twitter.com/oauth/access_token',
-                'configuration_url': None,
-                'always_use_defaults': False
-                }
             }
-
-
-                
-                
-
-
 
 class DevelopmentConfig(Config):
     DEBUG = True 
