@@ -22,6 +22,7 @@ class _AdminView(AdminIndexView):
         return current_user.is_authenticated()
 
 class _DbModel(model.ModelAdmin):
+    list_template = 'admin/list.html'
     def is_accessible(self):
         if current_app.debug:
             print("is_accessible() at _DbModel hit with user {}".format(current_user))
