@@ -18,6 +18,7 @@ body {
     padding-top: 16px;
     padding-bottom: 16px;
     margin: 0 0 23px 0;
+		background-image: url('{{ url_for("static", filename="img/crosses.png") }}');
 }
 body,p,div {
     font-family: 'Open Sans', sans-serif;
@@ -33,11 +34,15 @@ pre,code {
 .container-narrow {
     margin: 0 auto;
     max-width: 700px;
+    background-color: rgba(245,245,245,1.0);
+		padding: 20px;
+		border: 1px #bbb solid;
+		border-radius: 5px;
 }
 .jumbotron {
     margin: 5px 0;
     text-align: left;
-    background-color: white;
+		background: transparent;
 }
 .jumbotron h1 {
     font-size: 40px;
@@ -84,11 +89,20 @@ form {
 .btn {
 	border-radius:0;
 }
+.nav-tabs.nav-justified > .active > a {
+	border-bottom-color: #ddd;
+	border-bottom: none;
+}
+.nav-tabs.nav-justified > .active > a:hover {
+	background-color: rgba(255,255,255,0.2);
+	border-bottom: none;
+}
 .nav-tabs.nav-justified > li > a {
 	border-radius:0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	background: transparent;
 }
 .form-control {
 	border-radius:0;

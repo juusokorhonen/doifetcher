@@ -196,7 +196,49 @@ class Article(db.Model):
         #return '<Article %r>' % self.doi
         return u'{}'.format(self.title)
 
+    def citation(self):
+        citation_text = ''
+        
+        num_authors = len(self.authors)
+        cnt = 0
+        for author in self.authors:
+            if author.middle is not None:
+                citation_text += "{first} {middle} {last}".format(first=author.first, middle=author.middle, last=author.last)
+            else:
+                citation_text += "{first} {last}".format(first=author.first, last=author.last)
+            cnt += 1
+            if cnt < num_authors:
+                citation_text += ", "
+            else:
+                citation_text += ". "
+        
+        if self.title is not None:
+            citation_text += "{}, ".format(self.title)
+        
+        if self.journal.abbreviation is not None:
+            citation_text += "{} ".format(self.journal.abbreviation)
+        elif self.journal is not None:
+            citation_text += "{} ".format(self.journal.name)
+
+        if self.pub_date.year is not None:
+            citation_text += "({}) ".format(self.pub_date.year)
+
+        if self.volume is not None:
+            citation_text += "{}".format(self.volume)
+
+        if self.pages is not None:
+            citation_text += ", {}.".format(self.pages)
+        else:
+            citation_text += "."
+
+        if self.doi is not None:
+            citation_text += " DOI: {}.".format(self.doi)
+
+        return citation_text
+
     def __unicode__(self):
+        return self.citation()
+
         if self.journal.abbreviation is not None:
             journal = self.journal.abbreviation
         elif self.journal.name is not None:
