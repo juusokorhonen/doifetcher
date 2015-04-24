@@ -348,8 +348,12 @@ def add():
                             mod_date=mod_date,
                             journal=journal,
                             inserter=inserter,
-                            inserter_ip=inserter_ip,
-                            authors=[author for (author,new) in authors]) # author contains tuples of the form: (author, new)
+                            inserter_ip=inserter_ip)
+                    cnt = 0
+                    for (author, new) in authors:
+                        article.author_assoc.append(author)
+                        cnt += 1
+                        # author contains tuples of the form: (author, new)
                     if json_data:
                         article.json_data=json.dumps(json_data)
 

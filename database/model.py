@@ -120,6 +120,8 @@ class Author(db.Model):
         mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref=db.backref('authors', lazy='dynamic'))
+    articles = db.relationship('Article', secondary='article_authors', passive_updates=False)
+    #articles = association_proxy('article_assoc', 'article')
 
     def __repr__(self):
         return u"<Author {}, {} {}>".format(self.last, self.first, self.middle)
@@ -161,9 +163,11 @@ class ArticleAuthor(db.Model):
     """Maps an ordered many-to-many relationship between articles and authors."""
     __tablename__ = 'article_authors'
 
-    article_id = db.Column(db.Integer, db.ForeignKey('articles.id'), primary_key=True)
-    author_id = db.Column(db.Integer, db.ForeignKey('authors.id'), primary_key=True)
-    position = db.Column(db.Integer)
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id', onupdate='CASCADE'), primary_key=True)
+    author_id = db.Column(db.Integer, db.ForeignKey('authors.id', onupdate='CASCADE'), primary_key=True)
+    position = db.Column(db.Integer, nullable=False)
+    #article = db.relationship('Article', backref=db.backref('author_assoc', cascade='all,delete-orphan', single_parent=True))
+    author = db.relationship('Author', backref=db.backref('article_assoc', cascade='all,delete-orphan', single_parent=True))
 
 class Article(db.Model):
     """Represents an article, which can have many authors."""
@@ -182,7 +186,12 @@ class Article(db.Model):
     add_date = db.Column(db.DateTime)
     json_data = db.Column(db.Text)
     # TODO: CASCADING FAILS WITH ADMIN INTERFACE
-    authors = db.relationship("Author", secondary='article_authors', backref=db.backref('articles'), cascade='all,delete')
+    authors = db.relationship("Author", secondary=lambda: ArticleAuthor, passive_updates=False, order_by='ArticleAuthor.position',
+            backref=db.backref('article', cascade='all,delete-orphan', single_parent=True))
+    #authors = association_proxy('author_assoc', 'author')
+    #authors = association_proxy('author_assoc', 'author')
+    #author_assoc = db.relationship("Author", secondary='article_authors', passive_updates=False, order_by='ArticleAuthor.position')
+    #authors = association_proxy('author_assoc', 'author')
 
     if (db_type() == 'sqlite'):
         mod_date = db.Column(db.TIMESTAMP, nullable=False)

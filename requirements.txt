@@ -4,7 +4,8 @@ flask-appconfig
 flask-bootstrap
 flask-wtf
 wtforms
-Flask-SuperAdmin
+#Flask-SuperAdmin
+flask-admin
 requests
 #lxml
 sqlalchemy
