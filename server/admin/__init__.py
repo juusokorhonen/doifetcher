@@ -5,7 +5,7 @@ from jinja2 import TemplateNotFound
 from flask.ext.admin import Admin, BaseView, expose, model, AdminIndexView
 from flask.ext.login import login_required, current_user
 from flask.ext.admin.contrib.sqla import ModelView
-from database.model import Article, Author, Journal, User, OAuthUser
+from database.model import Article, Author, Journal, Tag, User, OAuthUser
 
 
 class _AdminView(AdminIndexView):
@@ -21,6 +21,7 @@ class _AdminView(AdminIndexView):
         return current_user.is_authenticated()
 
 class _DbModel(ModelView):
+    list_template = 'admin/model/list.html'
     def is_accessible(self):
         if current_app.debug:
             print("is_accessible() at _DbModel hit with user {}".format(current_user))
@@ -46,6 +47,7 @@ class ArticleView(_DbModel):
         # You can pass name and other parameters if you want to
         super(ArticleView, self).__init__(self._model, session, **kwargs)
 
+
 class AuthorView(_DbModel):
     _model = Author
     def __init__(self, session, **kwargs):
@@ -57,6 +59,11 @@ class JournalView(_DbModel):
     def __init__(self, session, **kwargs):
         # You can pass name and other parameters if you want to
         super(JournalView, self).__init__(self._model, session, **kwargs)
+
+class TagView(_DbModel):
+    _model = Tag
+    def __init__(self, session, **kwargs):
+        super(TagView, self).__init__(self._model, session, **kwargs)
 
 class UserView(_AdminDbModel):
     _model = User
@@ -76,6 +83,7 @@ def init_db(self, db):
     self.add_view(ArticleView(db.session))
     self.add_view(AuthorView(db.session))
     self.add_view(JournalView(db.session))
+    self.add_view(TagView(db.session))
     self.add_view(UserView(db.session))
     self.add_view(OAuthUserView(db.session))
 

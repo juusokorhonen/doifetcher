@@ -124,7 +124,7 @@ $('ul.nav a').filter(function() {
 </script>
 {% endblock %}
 
-{% block body %}
+{% block body -%}
 <div class="container-narrow">
 {% block flashes %}
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -146,9 +146,11 @@ $('ul.nav a').filter(function() {
 {% endblock %}
 {{ super() }}
 </div>
-{% endblock %}
+{%- endblock body %}
 
 {% block navbar %}
+<div class="row">
+	<div class="col-md-12">
     <ul class="nav nav-tabs nav-justified" role="tablist">
         <li><a href="{{ url_for('welcome_page') }}"><span class="glyphicon glyphicon-home"></span> Start</a></li>
 				<li><a href="{{ url_for('simple.add') }}"><span class="glyphicon glyphicon-plus-sign"></span> Add one</a></li>
@@ -175,6 +177,9 @@ $('ul.nav a').filter(function() {
 				</li>
 				{% endif %}
     </ul>
+	</div>
+	{% block navsubrow %}{% endblock %}
+</div>
 {% endblock %}
 
 

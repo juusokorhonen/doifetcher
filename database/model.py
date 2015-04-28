@@ -120,8 +120,6 @@ class Author(db.Model):
         mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref=db.backref('authors', lazy='dynamic'))
-    #articles = db.relationship('Article', secondary='article_authors', passive_updates=False)
-    #articles = association_proxy('article_assoc', 'article')
 
     def __repr__(self):
         return u"<Author {}, {} {}>".format(self.last, self.first, self.middle)
@@ -172,9 +170,21 @@ class ArticleAuthor(db.Model):
     def __unicode__(self):
         return "({}) {}".format(self.position, self.author.name())
 
+class ArticleTag(db.Model):
+    """Maps an article to a tag."""
+    __tablename__ = 'article_tags'
+
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id', onupdate='CASCADE'), primary_key=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey('tags.id', onupdate='CASCADE'), primary_key=True)
+    #article = db.relationship('Article', backref=db.backref('tag_assoc'))
+    #tag = db.relationship('Tag', backref=db.backref('article_assoc'))
+
+    def __unicode__(self):
+        return "{}".format(self.tag.name)
+
 class Article(db.Model):
     """Represents an article, which can have many authors."""
-    __tablename__ = "articles"
+    __tablename__ = 'articles'
 
     id = db.Column(db.Integer, primary_key=True)
     doi = db.Column(db.String(4096))
@@ -188,13 +198,9 @@ class Article(db.Model):
     pub_date = db.Column(db.DateTime)
     add_date = db.Column(db.DateTime)
     json_data = db.Column(db.Text)
-    # TODO: CASCADING FAILS WITH ADMIN INTERFACE
     authors = db.relationship("Author", secondary='article_authors', passive_updates=False, order_by='ArticleAuthor.position',
             backref=db.backref('articles', cascade='all,delete-orphan', single_parent=True))
-    #authors = association_proxy('author_assoc', 'author')
-    #authors = association_proxy('author_assoc', 'author')
-    #author_assoc = db.relationship("Author", secondary='article_authors', passive_updates=False, order_by='ArticleAuthor.position')
-    #authors = association_proxy('author_assoc', 'author')
+    tags = db.relationship('Tag', secondary='article_tags', backref=db.backref('articles', lazy='dynamic'))
 
     if (db_type() == 'sqlite'):
         mod_date = db.Column(db.TIMESTAMP, nullable=False)
@@ -268,4 +274,11 @@ class Journal(db.Model):
     def __unicode__(self):
         return self.__repr__()
 
+class Tag(db.Model):
+    """Represents a tag on an article. A tag can be anything."""
+    __tablename__ = "tags"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(256), unique=True)
 
+    def __unicode__(self):
+        return "{}".format(self.name)
