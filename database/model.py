@@ -120,7 +120,7 @@ class Author(db.Model):
         mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref=db.backref('authors', lazy='dynamic'))
-    articles = db.relationship('Article', secondary='article_authors', passive_updates=False)
+    #articles = db.relationship('Article', secondary='article_authors', passive_updates=False)
     #articles = association_proxy('article_assoc', 'article')
 
     def __repr__(self):
@@ -166,8 +166,11 @@ class ArticleAuthor(db.Model):
     article_id = db.Column(db.Integer, db.ForeignKey('articles.id', onupdate='CASCADE'), primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey('authors.id', onupdate='CASCADE'), primary_key=True)
     position = db.Column(db.Integer, nullable=False)
-    #article = db.relationship('Article', backref=db.backref('author_assoc', cascade='all,delete-orphan', single_parent=True))
+    article = db.relationship('Article', backref=db.backref('author_assoc', cascade='all,delete-orphan', single_parent=True))
     author = db.relationship('Author', backref=db.backref('article_assoc', cascade='all,delete-orphan', single_parent=True))
+
+    def __unicode__(self):
+        return "({}) {}".format(self.position, self.author.name())
 
 class Article(db.Model):
     """Represents an article, which can have many authors."""
@@ -186,8 +189,8 @@ class Article(db.Model):
     add_date = db.Column(db.DateTime)
     json_data = db.Column(db.Text)
     # TODO: CASCADING FAILS WITH ADMIN INTERFACE
-    authors = db.relationship("Author", secondary=lambda: ArticleAuthor, passive_updates=False, order_by='ArticleAuthor.position',
-            backref=db.backref('article', cascade='all,delete-orphan', single_parent=True))
+    authors = db.relationship("Author", secondary='article_authors', passive_updates=False, order_by='ArticleAuthor.position',
+            backref=db.backref('articles', cascade='all,delete-orphan', single_parent=True))
     #authors = association_proxy('author_assoc', 'author')
     #authors = association_proxy('author_assoc', 'author')
     #author_assoc = db.relationship("Author", secondary='article_authors', passive_updates=False, order_by='ArticleAuthor.position')
@@ -205,21 +208,22 @@ class Article(db.Model):
         #return '<Article %r>' % self.doi
         return u'{}'.format(self.title)
 
-    def citation(self):
+    def citation(self, authors=True):
         citation_text = ''
-        
-        num_authors = len(self.authors)
-        cnt = 0
-        for author in self.authors:
-            if author.middle is not None:
-                citation_text += "{first} {middle} {last}".format(first=author.first, middle=author.middle, last=author.last)
-            else:
-                citation_text += "{first} {last}".format(first=author.first, last=author.last)
-            cnt += 1
-            if cnt < num_authors:
-                citation_text += ", "
-            else:
-                citation_text += ". "
+       
+        if authors:
+            num_authors = len(self.authors)
+            cnt = 0
+            for author in self.authors:
+                if author.middle is not None:
+                    citation_text += "{first} {middle} {last}".format(first=author.first, middle=author.middle, last=author.last)
+                else:
+                    citation_text += "{first} {last}".format(first=author.first, last=author.last)
+                cnt += 1
+                if cnt < num_authors:
+                    citation_text += ", "
+                else:
+                    citation_text += ". "
         
         if self.title is not None:
             citation_text += "{}, ".format(self.title)
@@ -246,21 +250,7 @@ class Article(db.Model):
         return citation_text
 
     def __unicode__(self):
-        return self.citation()
-
-        if self.journal.abbreviation is not None:
-            journal = self.journal.abbreviation
-        elif self.journal.name is not None:
-            journal = self.journal.name
-        else:
-            journal = ""
-
-        year = self.pub_date.year
-        if year is not None:
-            year = "({}) ".format(year)
-
-        title = self.title
-        return "{}{}: {}".format(year, journal, title)
+        return self.citation(authors=False)
 
 class Journal(db.Model):
     """Represents a (scientific) journal, which has a name and an optional abbreviation."""

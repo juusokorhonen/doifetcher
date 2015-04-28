@@ -351,7 +351,8 @@ def add():
                             inserter_ip=inserter_ip)
                     cnt = 0
                     for (author, new) in authors:
-                        article.author_assoc.append(author)
+                        article_author = ArticleAuthor(author=author, position=cnt)
+                        article.author_assoc.append(article_author)
                         cnt += 1
                         # author contains tuples of the form: (author, new)
                     if json_data:
