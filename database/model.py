@@ -31,6 +31,9 @@ class User(UserMixin, db.Model):
     nickname = db.Column(db.String(128))
     name = db.Column(db.String(1024))
     admin = db.Column(db.Boolean, default=False)
+    oauths = db.relationship("OAuthUser", backref=db.backref('user'))
+    authors = db.relationship("Author", backref=db.backref('user'))
+    articles = db.relationship("Article", backref=db.backref('inserter'))
 
     def is_authenticated(self):
         """
@@ -94,7 +97,6 @@ class OAuthUser(db.Model):
     oauth_id = db.Column(db.String(257), nullable=False)
     provider = db.Column(db.String(128), nullable=False)
     user_id  = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship('User', backref=db.backref('oauths', lazy='dynamic'))
     __table_args__ = (db.UniqueConstraint('provider', 'oauth_id', name='_unique_oauth_id'),)
 
     def __unicode__(self):
@@ -119,7 +121,6 @@ class Author(db.Model):
     else:
         mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship('User', backref=db.backref('authors', lazy='dynamic'))
 
     def __repr__(self):
         return u"<Author {}, {} {}>".format(self.last, self.first, self.middle)
@@ -168,7 +169,7 @@ class ArticleAuthor(db.Model):
     author = db.relationship('Author', backref=db.backref('article_assoc', cascade='all,delete-orphan', single_parent=True))
 
     def __unicode__(self):
-        return "({}) {}".format(self.position, self.author.name())
+        return "({}) {} @ {}".format(self.position, self.author.name(), self.article.citation_short())
 
 class ArticleTag(db.Model):
     """Maps an article to a tag."""
@@ -207,12 +208,35 @@ class Article(db.Model):
     else:
         mod_date = db.Column(db.TIMESTAMP, nullable=False, default=db.func.now(), onupdate=db.func.now())
     inserter_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    inserter = db.relationship('User', backref=db.backref('added_articles', lazy='dynamic'))
+    #inserter = db.relationship('User', backref=db.backref('added_articles', lazy='dynamic'))
     inserter_ip = db.Column(db.String(128))
 
     def __repr__(self):
         #return '<Article %r>' % self.doi
         return u'{}'.format(self.title)
+
+    def citation_short(self):
+        citation_text = ''
+
+        num_authors = len(self.authors)
+        author = self.authors[0]
+        citation_text += "{first} {middle} {last}".format(first=author.first, middle=(author.middle or ''), last=author.last)
+        if num_authors > 1:
+            citation_text += " et al."
+        citation_text += ", "
+
+        if self.journal.abbreviation is not None:
+            citation_text += "{}".format(self.journal.abbreviation)
+        elif self.journal is not None:
+            citation_text += "{}".format(self.journal.name)
+
+        if self.pub_date.year is not None:
+            citation_text += " ({}).".format(self.pub_date.year)
+        else:
+            citation_text += "."
+
+        return citation_text
+        
 
     def citation(self, authors=True):
         citation_text = ''

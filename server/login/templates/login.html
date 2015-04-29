@@ -8,12 +8,12 @@
 {% endblock %}
 
 {% block contentbody %}
-	<h2>Sign in</h2>
+	<h2>Please sign in to proceed</h2>
 
 		<div class="help-block">Please select your OAuth provider:</div>
 		<div class="control-group">
 			{% for pr,val in providers.items() %}
-			<a href="{{ url_for('login.oauth_authorize', provider=pr) }}"><img src="{{ url_for('login.static', filename='img/'+pr+'.png') }}" class="img-polaroid" style="margin:2px;" /></a>
+			<a href="{{ url_for('login.oauth_authorize', provider=pr) }}"><img src="{{ url_for('login.static', filename='img/signin-'+pr+'.png') }}" /></a>
 			{% endfor %}
 		</div>
 

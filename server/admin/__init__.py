@@ -21,7 +21,6 @@ class _AdminView(AdminIndexView):
         return current_user.is_authenticated()
 
 class _DbModel(ModelView):
-    list_template = 'admin/model/list.html'
     def is_accessible(self):
         if current_app.debug:
             print("is_accessible() at _DbModel hit with user {}".format(current_user))
@@ -42,6 +41,9 @@ admin_section = Admin(index_view=_AdminView())
 class ArticleView(_DbModel):
     _model = Article
     column_exclude_list = ['json_data', 'doi', 'add_date', 'mod_date', 'inserter', 'inserter_ip']
+    column_searchable_list = ('id', 'doi', 'title', 'add_date')
+    column_default_sort = ('pub_date', True)
+    column_filters = ('pub_date', 'journal')
     
     def __init__(self, session, **kwargs):
         # You can pass name and other parameters if you want to
@@ -50,23 +52,28 @@ class ArticleView(_DbModel):
 
 class AuthorView(_DbModel):
     _model = Author
+    column_searchable_list = ('first', 'middle', 'last', 'nickname')
     def __init__(self, session, **kwargs):
         # You can pass name and other parameters if you want to
         super(AuthorView, self).__init__(self._model, session, **kwargs)
 
 class JournalView(_DbModel):
     _model = Journal 
+    column_searchable_list = ('name', 'abbreviation')
     def __init__(self, session, **kwargs):
         # You can pass name and other parameters if you want to
         super(JournalView, self).__init__(self._model, session, **kwargs)
 
 class TagView(_DbModel):
     _model = Tag
+    column_searchable_list = ('name',)
     def __init__(self, session, **kwargs):
         super(TagView, self).__init__(self._model, session, **kwargs)
 
 class UserView(_AdminDbModel):
     _model = User
+    column_searchable_list = ('email', 'nickname', 'name')
+    column_filters = ('admin', )
     def __init__(self, session, **kwargs):
         # You can pass name and other parameters if you want to
         super(UserView, self).__init__(self._model, session, **kwargs)
