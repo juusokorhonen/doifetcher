@@ -26,6 +26,10 @@
 				<td>{{ user.email }}</td>
 			</tr>
 			<tr>
+				<th>Associated authors</th>
+				<td>{% for author in user.authors %}{{ author.name() }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+			</tr>
+			<tr>
 				<th>OAuth providers</th>
 				<td>{% for pr in user.oauths %}{{ pr.provider }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
 			</tr>
@@ -33,6 +37,9 @@
 				<th>User level</th>
 				<td>{% if user.admin %}Administrator{% else %}Regular user{% endif %}</td>
 			</tr>
+			<tr>
+				<th>Added articles</th>
+				<td><ul class="list-unstyled">{% for article in user.articles %}<li>{{ article.citation_short() }}</li>{% if not loop.last %}{% endif %}{% endfor %}</ul></td>
 		</table>
 	</div>
 
