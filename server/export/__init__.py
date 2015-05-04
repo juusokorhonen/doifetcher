@@ -30,7 +30,16 @@ def export_all():
         if (request_wants_json()):
             return jsonify(articles)
         else:
-            listhtml = render_template('list_ordered_by_year.html', articles=articles)
+            default_format = 'interactive_html'
+            export_format = request.args.get('format', default_format)
+            try:
+                return render_template(export_format + '.html', articles=articles)
+            except TemplateNotFound:
+                if current_app.debug:
+                    print("Requested formatter not found : {}".format(export_format))
+                flash("Formatter not found!", category='error')
+                return redirect(url_for('.export_welcome'))
+
             return render_template('export_all.html', listhtml=listhtml)
     except TemplateNotFound:
         abort(404)

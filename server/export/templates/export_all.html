@@ -1,62 +1,9 @@
 {% extends "base.html" %}
 
-{% block scripts %}
-{{ super() }}
-<script>
-// A nice function written by Jason Edelman (source: http://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse)
-function selectText(element) {
-    var doc = document
-        , text = doc.getElementById(element)
-        , range, selection
-    ;    
-    if (doc.body.createTextRange) { //ms
-        range = doc.body.createTextRange();
-        range.moveToElementText(text);
-        range.select();
-    } else if (window.getSelection) { //all others
-        selection = window.getSelection();        
-        range = doc.createRange();
-        range.selectNodeContents(text);
-        selection.removeAllRanges();
-        selection.addRange(range);
-    }
-}
-$("#selectHTML").click(function() {
-		selectText("htmlcode");
-});
-</script>
-{% endblock %}
-
 {% block contentbody %}
-	<h2>Export all</h2>
+	<h2>Publications</h2>
 
-	{% if listhtml %}
-		<p><a href="#" role="button" class="btn btn-primary" data-toggle="modal" data-target="#htmldataModal">Show HTML</a></p>
-
-		<div style="border-radius: 6px; -webkit-border-radius: 6px; -moz-border-radius: 6px; border-collapse: separate; border: solid #ddd 1px; padding: 1em; height: 100%; overflow: auto;">
-			{{ listhtml|safe }}
-		</div>
-	{% else %}
-		No data found!
-	{% endif %}
-
-	<div class="modal fade" id="htmldataModal" tabindes="-1" role="dialog" aria-labelledby="htmldataModalLabel" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-					<h4 class="modal-title" id="htmldataModelLabel">HTML Source Code</h4>
-				</div>
-				<div class="modal-body">
-					<p class="text-right"><a href="#" type="button" class="btn btn-default btn-sm" id="selectHTML">Select all</a></p>
-					<pre class="pre-scrollable small"><code class="html" id="htmlcode">{{ listhtml }}</code></pre>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				</div>
-			</div>
-		</div>
-	</div>
+	<div><a href="{{ url_for('.export_welcome') }}" class="btn btn-primary" role="button">Back</a></div>
 
 {% endblock %}
 

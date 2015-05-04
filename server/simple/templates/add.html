@@ -178,7 +178,11 @@ $('#doi_field').change(function() {
  
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
-               <button type="submit" id="save" name="save" value="Save" class="btn btn-primary">Save to Database</button> 
+							{% if not config.ALLOW_ANONYMOYS_ADD and (not user.is_authenticated() or user.is_anonymoys()) %}
+								<button type="submit" id="save" name="save" value="Save" class="btn btn-warning" disabled="disabled">Please sign in to save</button>
+							{% else %}
+								<button type="submit" id="save" name="save" value="Save" class="btn btn-primary">Save to Database</button>
+							{% endif %}
                <a href="{{ url_for('.add') }}" class="btn btn-default active" role="button">Reset</a>
             </div>
         </div>

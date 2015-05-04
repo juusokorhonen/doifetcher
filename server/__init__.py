@@ -71,6 +71,7 @@ def create_app(config=None, configfile=None):
     # Add custom filter to jinja
     app.jinja_env.filters['prettyjson'] = _jinja2_filter_prettyjson
     app.jinja_env.filters['sn'] = _jinja2_filter_supress_none
+    app.jinja_env.filters['sort_by_first_author'] = _jinja2_sort_by_first_author
 
     # Add errorhandler
     from server.errorhandler import register_errorhandlers 
@@ -100,3 +101,13 @@ def _jinja2_filter_supress_none(val):
     else:
         return u''
 
+def _jinja2_sort_by_first_author(article_list):
+    if article_list is not None:
+        try:
+            #for article in article_list:
+            #    print(article.authors[0].last)
+            return sorted(article_list, key=lambda x: x.authors[0].last)
+        except:
+            return article_list
+    else:
+        return u''

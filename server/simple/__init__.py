@@ -179,6 +179,17 @@ def add():
 
     if (request.method == 'POST'): # Requested to save the form
         if (form.fetch_doi.data): # Fetch DOI
+            if not current_user.is_authenticated() or current_user.is_anonymous():
+                if current_app.debug:
+                    print("User is not authenticated : {}".format(str(current_user)))
+                if current_app.config.get('ALLOW_ANONYMOUS_ADD', False):
+                    #flash("Please log in before trying to save.", category='warning')
+                    if current_app.debug:
+                        print("Warning: anonymous adding is not allowed.")
+            else:
+                if current_app.debug:
+                    print("User is authenticated : {}".format(str(current_user)))
+
             json_data = fetchDOIData(form.doi_field.data)
 
             # Now process the json data into the form
@@ -217,9 +228,21 @@ def add():
                     except Exception as e:
                         pass
             # Finally show the pre-filled form
-            return render_template('add.html', form=form)  
+            return render_template('add.html', form=form, user=current_user)  
 
         elif (form.save.data): # Save article to database
+            if not current_user.is_authenticated() or current_user.is_anonymous():
+                if current_app.debug:
+                    print("User not authenticated : {}".format(str(current_user)))
+                # User is not authenticated, so do not allow saving
+                if current_app.config.get('ALLOW_ANONYMOUS_ADD', False):
+                    # If anonymous saving is not allowed, redirect back to form
+                    flash("Anonymous saving disabled, please log in first.", category='error')
+                    redirect(url_for('login.add', form=form))
+            else:
+                if current_app.debug:
+                    print("User authenticated : {}".format(str(current_user)))
+
             if (form.validate()): # If form validates, save it        
                 # Process authors
                 authors = []
@@ -433,15 +456,15 @@ def add():
                 # Commit everything
                 db.session.commit()
 
-                return render_template('save.html', authors=authors, journal=journal, article=article)  
+                return render_template('save.html', authors=authors, journal=journal, article=article, user=current_user)  
             else: # Requested save, but form did not validate
                 flash('There were errors in the form', 'error')
                 #print(form.errors)
-                return render_template('add.html', form=form)
+                return render_template('add.html', form=form, user=current_user)
 
         else: # Posted something, but did not press fetchdoi or save
             flash(u"Unknown error occurred", 'error')
-            return render_template('add.html', form=form)
+            return render_template('add.html', form=form, user=current_user)
 
     else: # Request method is GET, so show the form
-        return render_template('add.html', form=form)
+        return render_template('add.html', form=form, user=current_user)
