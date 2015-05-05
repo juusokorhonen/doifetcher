@@ -1,9 +1,35 @@
 {% extends "base.html" %}
 
-{% block contentbody %}
-	<h2>Publications</h2>
+{% macro format_filter(name, value, remove_link=True) %}
+{% if name == 'author' %} for {{ value.name }}
+{% elif name == 'year' %} in {{ value.name }}
+{% elif name == 'journal' %} in {{ value.name }}
+{% else %}{{ name }} :: {{ value }}
+{% endif %}
+{% if remove_link %}<a href="{{ url_for_this_page(remove=[value.field]) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
+{% endmacro %}
 
-	<div><a href="{{ url_for('.export_welcome') }}" class="btn btn-primary" role="button">Back</a></div>
+{% block contentbody %}
+	{% block formatters %}
+	<div class="row">
+		<div class="col-md-4 text-center"><a href="{{ url_for_this_page(format='interactive_html') }}" role="button" class="btn btn-sm btn-info btn-block">Interactive view</a></div>
+
+		<div class="col-md-4 text-center"><a href="{{ url_for_this_page(format='midgard_html') }}" role="button" class="btn btn-sm btn-info btn-block">Site-specific HTML for Aalto Midgard</a></div>
+
+		<div class="col-md-4 text-center"><a href="{{ url_for_this_page(format='csv_for_excel') }}" role="button" class="btn btn-sm btn-info btn-block">CSV for Excel</a></div>
+	</div>
+	{% endblock %}
+
+	<h2>Publications
+		{% for name,value in request.view_args.items() %}
+			{{ format_filter(name, value, remove_link=False) }}	
+		{% endfor %}
+		{% for name,value in filters.items() %}
+			{% if loop.first %}<small>{% endif %}
+			{{ format_filter(name, value) }}	
+			{% if loop.last %}</small>{% endif %}
+		{% endfor %}
+	</h2>
 
 {% endblock %}
 

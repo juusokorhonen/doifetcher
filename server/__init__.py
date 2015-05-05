@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function, unicode_literals)
 
-from flask import Flask, url_for, render_template, abort, flash, redirect, session, request, g
+from flask import Flask, url_for, render_template, abort, flash, redirect, session, request, g, current_app
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask_wtf.csrf import CsrfProtect
@@ -72,6 +72,8 @@ def create_app(config=None, configfile=None):
     app.jinja_env.filters['prettyjson'] = _jinja2_filter_prettyjson
     app.jinja_env.filters['sn'] = _jinja2_filter_supress_none
     app.jinja_env.filters['sort_by_first_author'] = _jinja2_sort_by_first_author
+    app.jinja_env.globals['url_for_other_page'] = _jinja2_url_for_other_page
+    app.jinja_env.globals['url_for_this_page'] = _jinja2_url_for_this_page
 
     # Add errorhandler
     from server.errorhandler import register_errorhandlers 
@@ -111,3 +113,19 @@ def _jinja2_sort_by_first_author(article_list):
             return article_list
     else:
         return u''
+
+def _jinja2_url_for_other_page(page, remove=[], **kwargs):
+    args = request.view_args.copy()
+    args.update(request.args.copy())
+    for k,v in kwargs.items():
+        args[k] = v
+    for val in remove:
+        if val in args.keys():
+            args.pop(val)
+    return url_for(page, **args)
+
+def _jinja2_url_for_this_page(**kwargs):
+    return _jinja2_url_for_other_page(request.endpoint, **kwargs)
+
+
+

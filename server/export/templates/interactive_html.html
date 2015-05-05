@@ -3,25 +3,45 @@
 {% macro render_publication_list() %}
 {% set counter = 0 %}
 {% for year in articles|groupby('pub_date.year')|reverse %}
+	<h3 class="text-center">{{ year.grouper }}</h3>
 	{% for article in year.list %}
-	<p>{{ article.title }}</p>
-	<dl class="dl-horizontal">
-		
-		<dt>Authors</dt>
-		{% for author in article.authors %}
-			<dd>{{ author.first }} {% if author.middle %}{{ author.middle }} {% endif %}{{ author.last }}{% if loop.last %}</dd>{% else %}<br /> {% endif %}
-		{% endfor %}
-
-		<dt>Title</dt>
-		<dd>{{ article.title }}</dd>
+	<div class="panel panel-primary" style="margin-top: 10px; margin-bottom: 10px;">
+		<div class="panel-heading">{{ article.title }}</div>
+		<dl class="dl-horizontal">
 
 		<dt>Journal</dt>
-		<dd>{% if article.journal.abbreviation %}{{ article.journal.abbreviation }}{% else %}{{ article.journal.name }}{% endif %}</dd>
+		<dd><a href="{{ url_for_other_page('.export_by_journal', journal_id=article.journal.id) }}">{{ article.journal.name }}</a></dd>
 	 
 		<dt>Year</dt>
-		<dd>{{ article.pub_date.year }}){% if article.volume %} {{ article.volume }}{% if article.issue %}:{{ article.issue }}{% endif %}{% endif %}{% if article.pages %}, {{ article.pages }}{% endif %}.
-		{% if article.doi %}DOI:&nbsp;<a href="http://dx.doi.org/{{ article.doi }}">{{ article.doi }}</a>{% endif %}
-	</p></li>
+		<dd><a href="{{ url_for_other_page('.export_by_year', year=article.pub_date.year) }}">{{ article.pub_date.year }}</a></dd>
+			
+		<dt>Authors</dt>
+		{% for author in article.authors %}
+			<dd><a href="{{ url_for_other_page('.export_by_author', author_id=author.id) }}">{{ author.first }} {% if author.middle %}{{ author.middle }} {% endif %}{{ author.last }}</a>{% if loop.last %}</dd>{% else %}<br /> {% endif %}
+		{% endfor %}
+
+		{% if article.volume %}
+		<dt>Volume</dt>
+		<dd> {{ article.volume }}
+		{% endif %}
+		
+		{% if article.issue %}
+		<dt>Issue</dt>
+		<dd>{{ article.issue }}
+		{% endif %}
+		
+		{% if article.pages %}
+		<dt>Pages</dt>
+		<dd>{{ article.pages }}</dd>
+		{% endif %}
+
+		{% if article.doi %}
+		<dt>DOI</dt>
+		<dd><a href="http://dx.doi.org/{{ article.doi }}">{{ article.doi }}</a></dd>
+		{% endif %}
+
+		</dl>
+	</div>
 	{% endfor %}
 	{% set counter = counter + year.list|length %}
 </ol>

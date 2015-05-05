@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 
 {% block contentbody %}
-	<h2>Export</h2>
+	{% block formatters %}
 	<div class="row">
-		<div class="col-md-4"><a href="{{ url_for('.export_all', format='interactive_html') }}" role="button" class="btn btn-primary">Interactive view</a></div>
+		<div class="col-md-3 text-center"><a href="{{ url_for('.export_all', format='interactive_html') }}" role="button" class="btn btn-xs btn-primary">Interactive view</a></div>
+
+		<div class="col-md-3 text-center"><a href="{{ url_for('.export_all', format='midgard_html') }}" role="button" class="btn btn-xs btn-primary">Site-specific HTML for Aalto Midgard</a></div>
+
+		<div class="col-md-3 text-center"><a href="{{ url_for('.export_all', format='csv_for_excel') }}" role="button" class="btn btn-xs btn-primary">CSV for Excel</a></div>
 	</div>
-	<div class="row">
-		<div class="col-md-4"><a href="{{ url_for('.export_all', format='midgard_html') }}" role="button" class="btn btn-primary">Site-specific HTML for Aalto Midgard</a></div>
-	</div>
-	<div class="row">
-		<div class="col-md-4"><a href="{{ url_for('.export_all', format='csv_for_excel') }}" role="button" class="btn btn-primary">CSV for Excel</a></div>
-	</div>
+	{% endblock %}
 {% endblock %}
 
 {% block marketing %}
