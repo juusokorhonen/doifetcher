@@ -24,7 +24,7 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True 
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_ECHO = False 
     ALLOW_ANONYMOYS_ADD = False 
 
 class TestingConfig(Config):

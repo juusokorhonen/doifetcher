@@ -116,12 +116,21 @@ def _jinja2_sort_by_first_author(article_list):
 
 def _jinja2_url_for_other_page(page, remove=[], **kwargs):
     args = request.view_args.copy()
-    args.update(request.args.copy())
-    for k,v in kwargs.items():
-        args[k] = v
-    for val in remove:
-        if val in args.keys():
-            args.pop(val)
+    args.update(request.args.items())
+    args.update(kwargs)
+    
+    # Remove (key,value) pairs in remove list
+    #for k,v in remove:
+    #    keyvals = args.poplist(k)
+    #    newvals = [val for val in keyvals if (val != v)]
+    #    for val in newvals:
+    #        args.add(k,val)
+
+    #if current_app.debug:
+    #    print("url_for_other_page passed on with args:")
+    #    for k,v in args.to_dict(flat=False).items():
+    #        print("{} : {}".format(k,v))
+
     return url_for(page, **args)
 
 def _jinja2_url_for_this_page(**kwargs):

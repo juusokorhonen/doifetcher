@@ -6,7 +6,15 @@
 {% elif name == 'journal' %} in {{ value.name }}
 {% else %}{{ name }} :: {{ value }}
 {% endif %}
-{% if remove_link %}<a href="{{ url_for_this_page(remove=[value.field]) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
+{% if remove_link %}<a href="{{ url_for_this_page(remove=[(value.field, value.id)]) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
+{% endmacro %}
+
+{% macro format_main_filter(name, value, remove_link=True) %}
+{% if name == 'author_id' %} for <span class="text-primary">{{ author.name() }}</span>
+{% elif name == 'journal_id' %} in <span class="text-primary">{{ journal.name }}</span>
+{% elif name == 'year' %} in <span class="text-primary">{{ value }}</span>
+{% endif %}
+{% if remove_link %}<a href="{{ url_for_other_page('.export_all') }}" class="small"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
 {% endmacro %}
 
 {% block contentbody %}
@@ -22,14 +30,28 @@
 
 	<h2>Publications
 		{% for name,value in request.view_args.items() %}
-			{{ format_filter(name, value, remove_link=False) }}	
+			{{ format_main_filter(name, value) }}	
 		{% endfor %}
-		{% for name,value in filters.items() %}
-			{% if loop.first %}<small>{% endif %}
-			{{ format_filter(name, value) }}	
-			{% if loop.last %}</small>{% endif %}
-		{% endfor %}
+		{% if filters is not none and filters|count > 0 %}
+			{% for name,value in filters.items() %}
+				{% if loop.first %}<small>{% endif %}
+				{{ format_filter(name, value) }}	
+				{% if loop.last %}</small>{% endif %}
+			{% endfor %}
+		{% endif %}
 	</h2>
+
+	<div class="row">
+		{% for year in years %}
+		<div class="col-md-1 text-center">
+			<a href="{{ url_for_this_page(year=year) }}" role="button" class="btn btn-xs btn-info">{{ year }}</a>
+		</div>
+		{% endfor %}
+	</div>
+
+	{% if articles is none or articles|count == 0 %}
+	<p class="lead">No articles matched the query!</p>
+	{% endif %}
 
 {% endblock %}
 

@@ -162,7 +162,7 @@ $('ul.nav a').filter(function() {
     <ul class="nav nav-tabs nav-justified" role="tablist">
         <li><a href="{{ url_for('welcome_page') }}"><span class="glyphicon glyphicon-home"></span> Start</a></li>
 				<li><a href="{{ url_for('simple.add') }}"><span class="glyphicon glyphicon-plus-sign"></span> Add one</a></li>
-				<li><a href="{{ url_for('export.export_welcome') }}"><span class="glyphicon glyphicon-export"></span> Export</a></li>
+				<li><a href="{{ url_for('export.export_all') }}"><span class="glyphicon glyphicon-export"></span> Export</a></li>
 				{% block nav_extra %}{% endblock %}
 				{% if g.user.is_authenticated() %}
 				<li class="dropdown">
