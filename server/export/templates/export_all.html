@@ -1,20 +1,22 @@
 {% extends "base.html" %}
 
 {% macro format_filter(name, value, remove_link=True) %}
-{% if name == 'author' %} for {{ value.name }}
-{% elif name == 'year' %} in {{ value.name }}
-{% elif name == 'journal' %} in {{ value.name }}
-{% else %}{{ name }} :: {{ value }}
-{% endif %}
-{% if remove_link %}<a href="{{ url_for_this_page(remove=[(value.field, value.id)]) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
-{% endmacro %}
 
-{% macro format_main_filter(name, value, remove_link=True) %}
-{% if name == 'author_id' %} for <span class="text-primary">{{ author.name() }}</span>
-{% elif name == 'journal_id' %} in <span class="text-primary">{{ journal.name }}</span>
-{% elif name == 'year' %} in <span class="text-primary">{{ value }}</span>
+{% if name == 'author_id' %} for
+{% elif name == 'year' %} in
+{% elif name == 'journal_id' %} in
 {% endif %}
-{% if remove_link %}<a href="{{ url_for_other_page('.export_all') }}" class="small"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
+{% if value is not mapping %}
+	(
+	{% for val in value | sort(attribute='id') %}
+		{{ val.name }}{% if not loop.last %}, {% endif %}
+		{% if remove_link %}<a href="{{ url_for_this_page(remove={name : val.id}) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
+	{% endfor %}
+	)
+{% else %}
+{{ value.name }}
+{% if remove_link %}<a href="{{ url_for_this_page(remove={name : value.id}) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
+{% endif %}
 {% endmacro %}
 
 {% block contentbody %}
@@ -29,11 +31,8 @@
 	{% endblock %}
 
 	<h2>Publications
-		{% for name,value in request.view_args.items() %}
-			{{ format_main_filter(name, value) }}	
-		{% endfor %}
-		{% if filters is not none and filters|count > 0 %}
-			{% for name,value in filters.items() %}
+		{% if fs is not none and fs|count > 0 %}
+			{% for name,value in fs.items() %}
 				{% if loop.first %}<small>{% endif %}
 				{{ format_filter(name, value) }}	
 				{% if loop.last %}</small>{% endif %}

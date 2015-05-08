@@ -10,14 +10,14 @@
 		<dl class="dl-horizontal">
 
 		<dt>Journal</dt>
-		<dd><a href="{{ url_for_other_page('.export_by_journal', journal_id=article.journal.id) }}">{{ article.journal.name }}</a></dd>
+		<dd><a href="{{ url_for_this_page(journal_id=article.journal.id) }}">{{ article.journal.name }}</a></dd>
 	 
 		<dt>Year</dt>
-		<dd><a href="{{ url_for_other_page('.export_by_year', year=article.pub_date.year) }}">{{ article.pub_date.year }}</a></dd>
+		<dd><a href="{{ url_for_this_page(year=article.pub_date.year) }}">{{ article.pub_date.year }}</a></dd>
 			
 		<dt>Authors</dt>
 		{% for author in article.authors %}
-			<dd><a href="{{ url_for_other_page('.export_by_author', author_id=author.id) }}">{{ author.first }} {% if author.middle %}{{ author.middle }} {% endif %}{{ author.last }}</a>{% if loop.last %}</dd>{% else %}<br /> {% endif %}
+			<dd><a href="{{ url_for_this_page(author_id=author.id) }}">{{ author.first }} {% if author.middle %}{{ author.middle }} {% endif %}{{ author.last }}</a>{% if loop.last %}</dd>{% else %}<br /> {% endif %}
 		{% endfor %}
 
 		{% if article.volume %}

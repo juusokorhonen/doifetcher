@@ -40,32 +40,22 @@ def get_year_range():
     max_year = result.max_date.year
     return range(min_year, max_year+1)
 
-def apply_filters(query=None, filters={}, order_by=None):
-    if current_app.debug:
-        print("apply_filters() called, with requst.args:")
-        for key,vals in request.args.to_dict(flat=False).items():
-            print("{} : {}".format(key, vals))
-            for val in vals:
-                print("{} : {}".format(" "*len(key), val))
-
+def apply_fs(query=None, fs={}, order_by=None):
     if query is None:
         query = Article.query
 
     try:
         # See if we have a year
         years = [int(i) for i in request.args.getlist('year')]
-        if current_app.debug:
-            print("Years:")
-            for year in years:
-                print(year)
-
-        for year in years:
-            start_date = datetime.datetime(year,1,1)
-            end_date = datetime.datetime(year,12,31)
-            
-            # TODO: This part puts AND requirements and we need OR
-            query = query.filter(Article.pub_date > start_date, Article.pub_date < end_date)
-            filters['year'] = {'id': year, 'name': year, 'field': 'year'}
+        if years is not None and len(years) > 0:
+            if len(years) > 1:
+                query = query.filter(db.extract('year',Article.pub_date).in_(years))
+                fs['year'] = [{'id': year, 'name': year, 'value': year} for year in years]
+            else:
+                print("Years = {}".format(str(years)))
+                year = years[0]
+                query = query.filter(db.extract('year',Article.pub_date)==year)
+                fs['year'] = {'id': year, 'name': year, 'value': year}
 
     except Exception as e:
         if current_app.debug:
@@ -77,7 +67,7 @@ def apply_filters(query=None, filters={}, order_by=None):
         
         journal = Journal.query.get(journal_id)
         query = query.filter_by(journal_id=journal_id)
-        filters['journal'] = {'id': journal_id, 'name': journal.name, 'field': 'journal_id'}
+        fs['journal_id'] = {'id': journal_id, 'name': journal.name, 'value': journal}
     except:
         pass
 
@@ -90,17 +80,17 @@ def apply_filters(query=None, filters={}, order_by=None):
             # One author
             author = Author.query.get(author_ids[0])
             query = query.filter(Article.authors.any(id=author_ids[0]))
-            filters['author'] = {'id': author_ids[0], 'name': author.name(), 'value': author, 'field': 'author_id'}
+            fs['author_id'] = {'id': author_ids[0], 'name': author.name(), 'value': author}
         else:
             # Multiple authors
             authors = Author.query.filter(id.in_(author_ids)).all()
             query = query.filter(Article.authors.any.in_(author_ids))
-            filters['author'] = []
+            fs['author_id'] = []
             for author in authors:
-                filters['author'].append({'id': author.id, 'name': author.name(), 'value': author, 'field': 'author_id'})
+                fs['author_id'].append({'id': author.id, 'name': author.name(), 'value': author})
     except Exception as e:
         if current_app.debug:
-            print("No author filters found: {}".format(str(e)))
+            print("No author fs found: {}".format(str(e)))
 
     # Order the query
     if order_by is None:
@@ -108,63 +98,16 @@ def apply_filters(query=None, filters={}, order_by=None):
     else:
         raise NotImplementedError
 
-    return (query, filters)
+    return (query, fs)
 
 @export.route('/export', methods=['GET'])
 def export_all():
     # We put all the data in the list "articles" and give it out to the template
-    (query, filters) = apply_filters() 
-    return render_with_format(query, years=get_year_range(), filters=filters) 
-
-@export.route('/export/author/<int:author_id>', methods=['GET'])
-def export_by_author(author_id):
-    try:
-        author = Author.query.get(author_id)
-    except Exception as e:
-        if current_app.debug:
-            print("Fetching author (id={}) failed . {}".format(author_id, str(e)))
-        return abort(404)
-    if author is None:
-        if current_app.debug:
-            print("Author id {} not found.".format(author_id))
-        return abort(404)
-   
-    query = Article.query.filter(Article.authors.any(id=author_id))
-    (query, filters) = apply_filters(query=query)
-
-    return render_with_format(query, filters=filters, author=author, years=get_year_range())
-
-@export.route('/export/journal/<int:journal_id>', methods=['GET'])
-def export_by_journal(journal_id):
-    try:
-        journal = Journal.query.get(journal_id)
-    except Exception as e:
-        if current_app.debug:
-            print("Fetching journal (id={}) failed . {}".format(journal_id, str(e)))
-        return abort(404)
-    if journal is None:
-        if current_app.debug:
-            print("Journal id {} not found.".format(journal_id))
-        return abort(404)
-
-    query = Article.query.filter_by(journal_id=journal_id)
-    (query, filters) = apply_filters(query=query)
-
-    return render_with_format(query, filters=filters, journal=journal, years=get_year_range())
-
-@export.route('/export/year/<int:year>', methods=['GET'])
-def export_by_year(year):
-    try:
-        year = int(year)
-    except:
-        if current_app.debug:
-            print("Could not transform {} into a year.".format(year))
-        abort(404)
-
-    start_date = datetime.datetime(year,1,1)
-    end_date = datetime.datetime(year,12,31)
-
-    query = Article.query.filter(Article.pub_date > start_date, Article.pub_date < end_date).order_by(Article.pub_date)
-    (query, filters) = apply_filters(query=query) 
-
-    return render_with_format(query, filters=filters, year=year, years=get_year_range())
+    fs = {}
+    query = Article.query
+    (query, fs) = apply_fs(query=query, fs=fs) 
+    for name,value in fs.items():
+        print("Filter {} : {}".format(str(name),str(value)))
+    else:
+        print("No fs")
+    return render_with_format(query, years=get_year_range(), fs=fs) 
