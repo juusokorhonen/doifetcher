@@ -1,62 +1,77 @@
 {% extends "base.html" %}
 
-{% block scripts %}
-{{ super() }}
-<script>
-// A nice function written by Jason Edelman (source: http://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse)
-function selectText(element) {
-    var doc = document
-        , text = doc.getElementById(element)
-        , range, selection
-    ;    
-    if (doc.body.createTextRange) { //ms
-        range = doc.body.createTextRange();
-        range.moveToElementText(text);
-        range.select();
-    } else if (window.getSelection) { //all others
-        selection = window.getSelection();        
-        range = doc.createRange();
-        range.selectNodeContents(text);
-        selection.removeAllRanges();
-        selection.addRange(range);
-    }
-}
-$("#selectHTML").click(function() {
-		selectText("htmlcode");
-});
-</script>
-{% endblock %}
+{% macro format_filter(name, value, remove_link=True) %}
+
+{% if name == 'author_id' %} for author:
+{% elif name == 'year' %} in year:
+{% elif name == 'journal_id' %} in journal:
+{% elif name == 'tag' %} with tags:
+{% endif %}
+{% if value is not mapping %}
+	any (
+	{% for val in value | sort(attribute='id') %}
+		{{ val.name }}{% if not loop.last %}, {% endif %}
+		{% if remove_link %}<a href="{{ url_for_this_page(remove=[(name, val.id)]) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
+	{% endfor %}
+	)
+{% else %}
+{{ value.name }}
+{% if remove_link %}<a href="{{ url_for_this_page(remove=[(name, value.id)]) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
+{% endif %}
+{% endmacro %}
 
 {% block contentbody %}
-	<h2>Export all</h2>
-
-	{% if listhtml %}
-		<p><a href="#" role="button" class="btn btn-primary" data-toggle="modal" data-target="#htmldataModal">Show HTML</a></p>
-
-		<div style="border-radius: 6px; -webkit-border-radius: 6px; -moz-border-radius: 6px; border-collapse: separate; border: solid #ddd 1px; padding: 1em; height: 100%; overflow: auto;">
-			{{ listhtml|safe }}
+	{% block formatters %}
+	<div class="row">
+		<div class="col-md-4 text-center">
+		{% if request.args.format == 'interactive_html' or not request.args.format %}
+		<button type="button" class="btn btn-sm btn-primary btn-block">Interactive view</button>
+		{% else %}
+		<a href="{{ url_for_this_page(format='interactive_html', remove='format') }}" role="button" class="btn btn-sm btn-default btn-block">Interactive view</a>
+		{% endif %}
 		</div>
-	{% else %}
-		No data found!
-	{% endif %}
-
-	<div class="modal fade" id="htmldataModal" tabindes="-1" role="dialog" aria-labelledby="htmldataModalLabel" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-					<h4 class="modal-title" id="htmldataModelLabel">HTML Source Code</h4>
-				</div>
-				<div class="modal-body">
-					<p class="text-right"><a href="#" type="button" class="btn btn-default btn-sm" id="selectHTML">Select all</a></p>
-					<pre class="pre-scrollable small"><code class="html" id="htmlcode">{{ listhtml }}</code></pre>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				</div>
-			</div>
+		<div class="col-md-4 text-center">
+		{% if request.args.format == 'midgard_html' %}
+		<button type="button" class="btn btn-sm btn-primary btn-block">Site-specific HTML for Midgard</button>
+		{% else %}
+		<a href="{{ url_for_this_page(format='midgard_html', remove='format') }}" role="button" class="btn btn-sm btn-default btn-block">Site-specific HTML for Midgard</a>
+		{% endif %}
 		</div>
+		<div class="col-md-4 text-center">
+		{% if request.args.format == 'csv_for_excel' %}
+		<button type="button" class="btn btn-sm btn-primary btn-block">CSV for Excel</button>	
+		{% else %}
+		<a href="{{ url_for_this_page(format='csv_for_excel', remove='format') }}" role="button" class="btn btn-sm btn-default btn-block">CSV for Excel</a>
+		{% endif %}
 	</div>
+	</div>
+	{% endblock %}
+
+	<h2>Publications
+		{% if fs is not none and fs|count > 0 %}
+			{% for name,value in fs.items() %}
+				{% if loop.first %}<small>{% endif %}
+				{{ format_filter(name, value) }}	
+				{% if loop.last %}</small>{% endif %}
+			{% endfor %}
+		{% endif %}
+	</h2>
+
+	<div class="row">
+		{% for year in years %}
+		<div class="col-md-1 text-center">
+			{% if year|string() in request.args.year %}
+			<button type="button" class="btn btn-primary btn-xs">{{ year }}</button>
+			{% else %}
+			<a href="{{ url_for_this_page(year=year) }}" role="button" class="btn btn-xs btn-default">{{ year }}</a>
+			{% endif %}
+		</div>
+		{% endfor %}
+	</div>
+
+	{% if articles is none or articles|count == 0 %}
+	<p class="lead">No articles matched the query!</p>
+	{% endif %}
 
 {% endblock %}
 

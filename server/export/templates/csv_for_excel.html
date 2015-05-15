@@ -1,0 +1,18 @@
+{% extends 'export_all.html' %}
+
+{% block contentbody %}
+{{ super() }}
+<div>
+<pre>
+{% set counter = 0 %}
+{% for year in articles|groupby('pub_date.year')|reverse -%}
+{{ year.grouper }}
+####
+{% for article in year.list|sort_by_first_author %}
+{% for author in article.authors %}{{ author.last }}, {{ author.first }}{% if author.middle %} {{ author.middle }}{% endif %}{% if loop.last %}. {% else %}; {% endif %}{% endfor %} {{ article.title }}, {% if article.journal.abbreviation %}{{ article.journal.abbreviation }}{% else %}{{ article.journal.name }}{% endif %}{% if article.volume %}, {{ article.volume }}{% endif %}{% if article.pages %}, {{ article.pages }}{% endif %} ({{ article.pub_date.year }}). {% if article.doi %}DOI:&nbsp;{{ article.doi }}{% endif %} {% endfor %}
+
+{% set counter = counter + year.list|length %}
+{%- endfor %}
+</pre>
+</div>
+{% endblock %}

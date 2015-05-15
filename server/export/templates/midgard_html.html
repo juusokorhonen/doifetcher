@@ -1,0 +1,74 @@
+{% extends 'export_all.html' %}
+
+{% macro render_publication_list() %}
+{% set counter = 0 %}
+{% for year in articles|groupby('pub_date.year')|reverse %}
+<h3 class="accordion">{{ year.grouper }} ({{ year.list|count }} {% if year.list|count == 1 %}article{% else %}articles{% endif %})</h3>
+<ol class="accordion">
+	{% for article in year.list %}
+	<li value="{{ counter + loop.index }}"><p>
+		{% for author in article.authors %}{{ author.first }} {% if author.middle %}{{ author.middle }} {% endif %}{{ author.last }}{% if loop.last %}. {% else %}, {% endif %}{% endfor %}
+		<strong>{{ article.title }}</strong>,
+		{% if article.journal.abbreviation %}{{ article.journal.abbreviation }}{% else %}{{ article.journal.name }}{% endif %} ({{ article.pub_date.year }}){% if article.volume %} {{ article.volume }}{% if article.issue %}:{{ article.issue }}{% endif %}{% endif %}{% if article.pages %}, {{ article.pages }}{% endif %}.
+		{% if article.doi %}DOI:&nbsp;<a href="http://dx.doi.org/{{ article.doi }}">{{ article.doi }}</a>{% endif %}
+	</p></li>
+	{% endfor %}
+	{% set counter = counter + year.list|length %}
+</ol>
+{% endfor %}
+{% endmacro %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// A nice function written by Jason Edelman (source: http://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse)
+function selectText(element) {
+    var doc = document
+        , text = doc.getElementById(element)
+        , range, selection
+    ;    
+    if (doc.body.createTextRange) { //ms
+        range = doc.body.createTextRange();
+        range.moveToElementText(text);
+        range.select();
+    } else if (window.getSelection) { //all others
+        selection = window.getSelection();        
+        range = doc.createRange();
+        range.selectNodeContents(text);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+}
+$("#selectHTML").click(function() {
+		selectText("htmlcode");
+});
+</script>
+{% endblock %}
+
+{% block contentbody %}
+{{ super() }}
+
+<p><a href="#" role="button" class="btn btn-primary" data-toggle="modal" data-target="#htmldataModal">Show HTML</a></p>
+
+<div style="border-radius: 6px; -webkit-border-radius: 6px; -moz-border-radius: 6px; border-collapse: separate; border: solid #ddd 1px; padding: 1em; height: 100%; overflow: auto;">
+	{{ render_publication_list() }}
+</div>
+
+<div class="modal fade" id="htmldataModal" tabindes="-1" role="dialog" aria-labelledby="htmldataModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h4 class="modal-title" id="htmldataModelLabel">HTML Source Code</h4>
+			</div>
+			<div class="modal-body">
+				<p class="text-right"><a href="#" type="button" class="btn btn-default btn-sm" id="selectHTML">Select all</a></p>
+				<pre class="pre-scrollable small"><code class="html" id="htmlcode">{{ render_publication_list() }}</code></pre>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'export_all.html' %}
+
+{% macro render_publication_list() %}
+{% set counter = 0 %}
+{% for year in articles|groupby('pub_date.year')|reverse %}
+	<h3 class="text-center">{{ year.grouper }}</h3>
+	{% for article in year.list %}
+	<div class="panel panel-primary" style="margin-top: 10px; margin-bottom: 10px;">
+		<div class="panel-heading">{{ article.title }}</div>
+		<dl class="dl-horizontal">
+
+		<dt>Journal</dt>
+		<dd><a href="{{ url_for_this_page(journal_id=article.journal.id) }}">{{ article.journal.name }}</a></dd>
+	 
+		<dt>Year</dt>
+		<dd><a href="{{ url_for_this_page(year=article.pub_date.year) }}">{{ article.pub_date.year }}</a></dd>
+			
+		<dt>Authors</dt>
+		{% for author in article.authors %}
+			<dd><a href="{{ url_for_this_page(author_id=author.id) }}">{{ author.first }} {% if author.middle %}{{ author.middle }} {% endif %}{{ author.last }}</a>{% if loop.last %}</dd>{% else %}<br /> {% endif %}
+		{% endfor %}
+
+		{% if article.volume %}
+		<dt>Volume</dt>
+		<dd> {{ article.volume }}
+		{% endif %}
+		
+		{% if article.issue %}
+		<dt>Issue</dt>
+		<dd>{{ article.issue }}
+		{% endif %}
+		
+		{% if article.pages %}
+		<dt>Pages</dt>
+		<dd>{{ article.pages }}</dd>
+		{% endif %}
+
+		{% if article.doi %}
+		<dt>DOI</dt>
+		<dd><a href="http://dx.doi.org/{{ article.doi }}">{{ article.doi }}</a></dd>
+		{% endif %}
+
+		<dt>Tags</dt>
+		<dd>
+		{% for tag in article.tags %}
+		{% if tag.name in request.args.tag %}
+		<a href="{{ url_for_this_page(remove=[('tag',tag.name)]) }}" role="button" class="btn btn-primary btn-xs">{{ tag }}</a>
+		{% else %}
+		<a href="{{ url_for_this_page(tag=tag.name) }}" role="button" class="btn btn-default btn-xs">{{ tag }}</a>
+		{% endif %}
+		{% if not loop.last %} {% endif %}
+		{% endfor %}
+		</dd>
+
+		</dl>
+	</div>
+	{% endfor %}
+	{% set counter = counter + year.list|length %}
+</ol>
+{% endfor %}
+{% endmacro %}
+
+{% block contentbody %}
+{{ super() }}
+<div>
+	{{ render_publication_list() }}
+</div>
+
+{% endblock %}

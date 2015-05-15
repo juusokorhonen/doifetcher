@@ -1,5 +1,6 @@
 {% extends 'admin/master.html' %}
+
 {% block body %}
-<h2>Database administration interface</h2>
-<p>Here you can directly mess with the database. Use with caution.</p>
+Here you can directly modify the database. Use with caution.
+<p><a class="btn btn-default" href="{{ url_for('welcome_page') }}" role="button">Back</a></p>
 {% endblock %}
