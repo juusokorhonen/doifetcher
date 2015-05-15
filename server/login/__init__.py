@@ -87,7 +87,11 @@ def oauth_callback(provider):
             return abort(500)
 
         if not user:
+            numusers = User.query.count()
             user = User(email=email, nickname=nickname, name=name)
+            if numusers == 0:
+                # First user is admin
+                user.admin = True
             db.session.add(user)
 
         oauthuser = OAuthUser(provider=provider, oauth_id=oauth_id, user=user)

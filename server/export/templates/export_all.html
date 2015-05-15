@@ -2,31 +2,48 @@
 
 {% macro format_filter(name, value, remove_link=True) %}
 
-{% if name == 'author_id' %} for
-{% elif name == 'year' %} in
-{% elif name == 'journal_id' %} in
+{% if name == 'author_id' %} for author:
+{% elif name == 'year' %} in year:
+{% elif name == 'journal_id' %} in journal:
+{% elif name == 'tag' %} with tags:
 {% endif %}
 {% if value is not mapping %}
-	(
+	any (
 	{% for val in value | sort(attribute='id') %}
 		{{ val.name }}{% if not loop.last %}, {% endif %}
-		{% if remove_link %}<a href="{{ url_for_this_page(remove={name : val.id}) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
+		{% if remove_link %}<a href="{{ url_for_this_page(remove=[(name, val.id)]) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
 	{% endfor %}
 	)
 {% else %}
 {{ value.name }}
-{% if remove_link %}<a href="{{ url_for_this_page(remove={name : value.id}) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
+{% if remove_link %}<a href="{{ url_for_this_page(remove=[(name, value.id)]) }}"><sup><span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span></sup><span class="sr-only">Remove filter</span></a>{% endif %}
 {% endif %}
 {% endmacro %}
 
 {% block contentbody %}
 	{% block formatters %}
 	<div class="row">
-		<div class="col-md-4 text-center"><a href="{{ url_for_this_page(format='interactive_html') }}" role="button" class="btn btn-sm btn-info btn-block">Interactive view</a></div>
-
-		<div class="col-md-4 text-center"><a href="{{ url_for_this_page(format='midgard_html') }}" role="button" class="btn btn-sm btn-info btn-block">Site-specific HTML for Aalto Midgard</a></div>
-
-		<div class="col-md-4 text-center"><a href="{{ url_for_this_page(format='csv_for_excel') }}" role="button" class="btn btn-sm btn-info btn-block">CSV for Excel</a></div>
+		<div class="col-md-4 text-center">
+		{% if request.args.format == 'interactive_html' or not request.args.format %}
+		<button type="button" class="btn btn-sm btn-primary btn-block">Interactive view</button>
+		{% else %}
+		<a href="{{ url_for_this_page(format='interactive_html', remove='format') }}" role="button" class="btn btn-sm btn-default btn-block">Interactive view</a>
+		{% endif %}
+		</div>
+		<div class="col-md-4 text-center">
+		{% if request.args.format == 'midgard_html' %}
+		<button type="button" class="btn btn-sm btn-primary btn-block">Site-specific HTML for Midgard</button>
+		{% else %}
+		<a href="{{ url_for_this_page(format='midgard_html', remove='format') }}" role="button" class="btn btn-sm btn-default btn-block">Site-specific HTML for Midgard</a>
+		{% endif %}
+		</div>
+		<div class="col-md-4 text-center">
+		{% if request.args.format == 'csv_for_excel' %}
+		<button type="button" class="btn btn-sm btn-primary btn-block">CSV for Excel</button>	
+		{% else %}
+		<a href="{{ url_for_this_page(format='csv_for_excel', remove='format') }}" role="button" class="btn btn-sm btn-default btn-block">CSV for Excel</a>
+		{% endif %}
+	</div>
 	</div>
 	{% endblock %}
 
@@ -43,7 +60,11 @@
 	<div class="row">
 		{% for year in years %}
 		<div class="col-md-1 text-center">
-			<a href="{{ url_for_this_page(year=year) }}" role="button" class="btn btn-xs btn-info">{{ year }}</a>
+			{% if year|string() in request.args.year %}
+			<button type="button" class="btn btn-primary btn-xs">{{ year }}</button>
+			{% else %}
+			<a href="{{ url_for_this_page(year=year) }}" role="button" class="btn btn-xs btn-default">{{ year }}</a>
+			{% endif %}
 		</div>
 		{% endfor %}
 	</div>

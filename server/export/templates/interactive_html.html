@@ -40,6 +40,18 @@
 		<dd><a href="http://dx.doi.org/{{ article.doi }}">{{ article.doi }}</a></dd>
 		{% endif %}
 
+		<dt>Tags</dt>
+		<dd>
+		{% for tag in article.tags %}
+		{% if tag.name in request.args.tag %}
+		<a href="{{ url_for_this_page(remove=[('tag',tag.name)]) }}" role="button" class="btn btn-primary btn-xs">{{ tag }}</a>
+		{% else %}
+		<a href="{{ url_for_this_page(tag=tag.name) }}" role="button" class="btn btn-default btn-xs">{{ tag }}</a>
+		{% endif %}
+		{% if not loop.last %} {% endif %}
+		{% endfor %}
+		</dd>
+
 		</dl>
 	</div>
 	{% endfor %}

@@ -355,7 +355,9 @@ def add():
                     mod_date = add_date
                     if current_user.is_authenticated():
                         inserter = current_user
-                        inserter_ip = None
+                        # We save the ip also for authenticated users
+                        #inserter_ip = None
+                        inserter_ip = request.remote_addr
                     else:
                         inserter = None
                         inserter_ip = request.remote_addr

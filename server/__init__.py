@@ -165,23 +165,25 @@ def convert_type(arg):
 
 def _jinja2_url_for_other_page(page, remove=None, **kwargs):
     args = MultiDict()
-    args.update(convert_type(request.view_args.copy()))
-    args.update(convert_type(request.args.copy()))
-    args.update(convert_type(kwargs.copy()))
+    if request.view_args is not None and request.view_args != [] and request.view_args != {}:
+        args.update(convert_type(request.view_args.copy()))
+    if request.args is not None and request.args != [] and request.args != {}:
+        args.update(convert_type(request.args.to_dict(flat=False)))
 
     # Process removes
     if remove is not None:
         if isinstance(remove, (basestring, int)):
-            args.pop(remove)
+            args.poplist(remove)
         elif isinstance(remove, list):
             for item in remove:
                 if isinstance(item, (basestring, int)):
-                    args.pop(item)
+                    args.poplist(item)
                 elif isinstance(item, tuple):
                     key, value = item
                     arg_values = args.poplist(key)
-                    new_values = [i for i in arg_values if not equal_args(i, value)]
-                    args.setlist(key, new_values)
+                    if arg_values is not None and arg_values != []:
+                        new_values = [i for i in arg_values if not equal_args(i, value)]
+                        args.setlist(key, new_values)
                 else:
                     raise ValueError
         elif isinstance(remove, dict):
@@ -192,14 +194,18 @@ def _jinja2_url_for_other_page(page, remove=None, **kwargs):
                     args.setlist(key, new_values)
                 elif isinstance(value, (list, tuple)):
                     arg_values = args.poplist(key)
-                    new_values = [i for i in arg_values if not equal_args(i, value)]
-                    args.setlist(key, new_values)
+                    if arg_values is not None and arg_values != []:
+                        new_values = [i for i in arg_values if not equal_args(i, value)]
+                        args.setlist(key, new_values)
                 else:
                     if current_app.debug:
                         print("Could not parse value : {}".format(value))
                     raise ValueError
         else:
             raise ValueError
+   
+    if kwargs is not None:
+        args.update(convert_type(kwargs.copy()))
 
     # Remove duplicates
     for key in args.keys():
