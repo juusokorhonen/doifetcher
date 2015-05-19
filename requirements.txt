@@ -22,3 +22,5 @@ flask-openid
 sqlalchemy-migrate
 #urllib3
 rauth
+# nltk requred for hashtagify.py
+nltk

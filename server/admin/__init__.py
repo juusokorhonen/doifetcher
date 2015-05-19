@@ -6,24 +6,20 @@ from flask.ext.admin import Admin, BaseView, expose, model, AdminIndexView
 from flask.ext.login import login_required, current_user
 from flask.ext.admin.contrib.sqla import ModelView
 from database.model import Article, Author, Journal, Tag, User, OAuthUser
+from wtforms import TextField, TextAreaField, HiddenField, ValidationError, SubmitField, FormField, FieldList, validators
+
 
 
 class _AdminView(AdminIndexView):
     @expose('/')
     def index(self):
-        if current_app.debug:
-            print("_AdminView index hit.")
         return self.render('admin/index.html')
 
     def is_accessible(self):
-        if current_app.debug:
-            print("is_accessible() at _AdminView hit with user {}".format(current_user))
         return current_user.is_authenticated()
 
 class _DbModel(ModelView):
     def is_accessible(self):
-        if current_app.debug:
-            print("is_accessible() at _DbModel hit with user {}".format(current_user))
         return current_user.is_authenticated()
 
     def __init__(self, model, session, **kwargs):
@@ -32,8 +28,6 @@ class _DbModel(ModelView):
 
 class _AdminDbModel(_DbModel):
     def is_accessible(self):
-        if current_app.debug:
-            print("is_accessible() at _AdminDbModel hit with use {}".format(current_user))
         return current_user.is_authenticated() and current_user.is_admin()
 
 admin_section = Admin(index_view=_AdminView())
@@ -66,7 +60,10 @@ class JournalView(_DbModel):
 
 class TagView(_DbModel):
     _model = Tag
+    column_list = ('name', )
     column_searchable_list = ('name',)
+    form_overrides = dict(name=TextField)
+    #form_columns = ('name',)
     def __init__(self, session, **kwargs):
         super(TagView, self).__init__(self._model, session, **kwargs)
 

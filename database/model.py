@@ -9,6 +9,7 @@ from datetime import datetime
 from nameparser import HumanName
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
+import re
 
 db = SQLAlchemy() # db get bound to the app by using the init_app(app)-function
 
@@ -298,11 +299,43 @@ class Journal(db.Model):
     def __unicode__(self):
         return self.__repr__()
 
+class TagStringType(db.TypeDecorator):
+    """
+    A custom type class to implement automatic formatting of tags.
+    """
+    impl = db.String
+    
+    @staticmethod
+    def tagify(value):
+        value = value.lower() # To lower case
+        pattern = re.compile(' ', re.UNICODE)
+        value = pattern.sub('-', value)
+        pattern = re.compile('[^\w-]+', re.UNICODE)
+        value = pattern.sub('', value) # Remove non-alphanumeric characters (excluding _ and -)
+        #pattern = re.compile('[_]', re.UNICODE)
+        #value = pattern.sub('-', value) # convert _ to -
+        pattern = re.compile('[-_]{1,}', re.UNICODE)
+        value = pattern.sub('-', value) # Convert occurencies of multiple -'s and _'s to single -
+        pattern = re.compile('[-]+$', re.UNICODE)
+        value = pattern.sub('', value) # Remove trailing dashes
+        return value
+
+    def process_bind_param(self, value, dialect):
+        # Add any custom processing of the tags here
+        return self.tagify(value)
+
+    def process_result_value(self, value, dialect):
+        # Add any custom processing of the return value here
+        return value
+
+
 class Tag(db.Model):
     """Represents a tag on an article. A tag can be anything."""
     __tablename__ = "tags"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(256), unique=True)
+    name = db.Column(TagStringType(256), unique=True)
 
     def __unicode__(self):
         return "{}".format(self.name)
+
+
