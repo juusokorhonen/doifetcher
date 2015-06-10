@@ -18,6 +18,7 @@ from server.export import export
 from database.model import db
 from server.admin import admin_section
 from server.errorhandler import register_errorhandlers 
+from server.simple import simple
 
 def create_app(config=None, configfile=None):
     """
@@ -46,7 +47,6 @@ def create_app(config=None, configfile=None):
         g.user = current_user
 
     # Import Blueprints
-    from server.simple import simple # Use Blueprints
     app.register_blueprint(simple) # register Frontend blueprint
 
     app.register_blueprint(export)
