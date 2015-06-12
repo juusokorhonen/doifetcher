@@ -1,0 +1,68 @@
+
+{% extends "base.html" %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(function() {
+	"use strict";
+	$(document).ready(function() {
+		$("#next-button").click(function() {
+			var nextid = parseInt($("#next-id").val(), 10);
+			$.ajax({
+				url: '{{ rest_url_for(tag) }}' + "/" + nextid,
+				dateType: 'json',
+				error: function() {
+					alert('No more tags');
+				},
+				success: function(data) {
+					var new_row = $("<tr><td>" + data.id + "</td><td>" + data.name + "</td></tr>");
+					$("#tags").append(new_row);
+					$("#next-id").val(nextid+1);
+				}
+			});
+		});
+		$("#all-button").click(function() {
+			$.ajax({
+				url: '{{ rest_url_for(tag) }}',
+				dataType: 'json',
+				success: function(data) {
+					var all_tags, new_row, i;
+					all_tags = data.objects;
+					for(i=0; i<data.objects.length; ++i) {
+						new_row = $("<tr><td>" + data.objects[i].id + "</td><td>" + data.objects[i].name + "</td></tr>");
+						$("#people-with-y").append(new_row);
+					}
+				}
+			});
+		});
+	});
+}());
+
+</script>
+{% endblock %}
+
+{% block contentbody %}
+	<h2>AJAX Test with REST and jQuery</h2>
+
+	<input type="button" id="next-button" value="Get next tag" class="btn btn-default btn-sm" />
+	<input type="hidden" id="next-id" value="0" />
+	<table id="tags" class="table table-striped table-condensed">
+		<thead>
+			<tr><th>ID</th><th>Name</th></tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+	<input type="button" id="all-button" value="Show the first 5 tags" class="btn btn-default btn-sm" />
+	<table id="tags-with-y" class="table table-striped table-condensed">
+		<thead>
+			<tr><th>ID</th><th>Name</th></tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+
+{% endblock %}
+
+{% block marketing %}
+
+{% endblock %}

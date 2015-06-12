@@ -6,6 +6,8 @@ from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask_wtf.csrf import CsrfProtect
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
+from flask.ext.restless import APIManager, ProcessingException
+import flask.ext.restless as restless
 from jinja2 import TemplateNotFound
 from werkzeug import MultiDict
 from server.forms import AddArticleForm
@@ -15,7 +17,7 @@ import json
 import pprint
 from server.login import login, lm
 from server.export import export
-from database.model import db
+from database.model import db, Tag, Journal, Article, Author, ArticleTag, ArticleAuthor
 from server.admin import admin_section
 from server.errorhandler import register_errorhandlers 
 from server.simple import simple
@@ -79,7 +81,29 @@ def create_app(config=None, configfile=None):
 
     # Add errorhandler
     register_errorhandlers(app)
-    
+  
+    # Add RESTful interface to system
+    def rest_auth_func(**kw):
+        if not current_user.is_authenticated():
+            raise ProcessingException(description='Not Authorized', code=401)
+   
+    with app.app_context():
+        rest_manager = APIManager(app, session=session, flask_sqlalchemy_db=db, preprocessors=dict(GET_SINGLE=[rest_auth_func], GET_MANY=[rest_auth_func], POST=[rest_auth_func], DELETE=[rest_auth_func]))
+
+        rest_manager.create_api(Tag, methods=['GET', 'POST', 'DELETE'])
+        rest_manager.create_api(ArticleTag, methods=['GET', 'POST', 'DELETE'])
+        rest_manager.create_api(ArticleAuthor, methods=['GET'])
+        rest_manager.create_api(Journal, methods=['GET'])
+        rest_manager.create_api(Author, methods=['GET'], include_columns=['id','first','middle','last'])
+        rest_manager.create_api(Article, methods=['GET'], exclude_columns=['json_data','author_assoc'])
+   
+    @app.route('/ajax-test')
+    def ajax_test():
+        try:
+            return render_template('ajax_test.html', rest_url_for=restless.url_for, tag=Tag)
+        except TemplateNotFound:
+            abort(404)
+
     # Add frontpage
     @app.route('/')
     def welcome_page():

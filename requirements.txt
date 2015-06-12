@@ -24,3 +24,4 @@ sqlalchemy-migrate
 rauth
 # nltk requred for hashtagify.py
 nltk
+flask-restless

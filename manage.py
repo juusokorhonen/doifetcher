@@ -8,7 +8,7 @@ from server import create_app
 from flask import url_for
 from config import Config, DevelopmentConfig, TestingConfig, ProductionConfig
 
-app = create_app(config=DevelopmentConfig)
+app = create_app(config=TestingConfig)
 manager = Manager(app)
 
 manager.add_command("runserver", Server(
