@@ -88,7 +88,7 @@ def create_app(config=None, configfile=None):
             raise ProcessingException(description='Not Authorized', code=401)
    
     with app.app_context():
-        rest_manager = APIManager(app, session=session, flask_sqlalchemy_db=db, preprocessors=dict(GET_SINGLE=[rest_auth_func], GET_MANY=[rest_auth_func], POST=[rest_auth_func], DELETE=[rest_auth_func]))
+        rest_manager = APIManager(app, session=session, flask_sqlalchemy_db=db, preprocessors=dict(POST=[rest_auth_func], DELETE=[rest_auth_func]))
 
         rest_manager.create_api(Tag, methods=['GET', 'POST', 'DELETE'])
         rest_manager.create_api(ArticleTag, methods=['GET', 'POST', 'DELETE'])

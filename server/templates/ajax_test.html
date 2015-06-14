@@ -6,36 +6,133 @@
 <script>
 (function() {
 	"use strict";
+	function load_json_tags(data, page) {
+		var i;
+		var all_tags = data.objects;
+		var num_total_tags = data.num_results;
+		var num_fetched_tags = all_tags.length;
+		var num_pages = data.total_pages;
+		var num_page = data.page;
+		$('#all-tags tbody tr').remove(); // Delete all existing lines
+		for (i=0; i<all_tags.length; i++) {
+			var new_row = $("<tr>").append(
+					$("<td>").append( 
+						all_tags[i].id),
+					$("<td>").append(
+						all_tags[i].name));
+			$('#all-tags tbody').append(new_row);
+		}
+		update_pagination(num_page, num_pages);
+	}
+	function update_pagination(num_page, num_pages) {
+		$('li.tags-goto-page').remove(); // Remove all currently dispalyed
+		var $prev_li = $('#all-tags-pagination li').first();
+		for (var i=1; i<=num_pages; i++) {
+			var $new_item, $link_item;
+			if (i === num_page) {
+				$new_item = $('<li>').addClass('tags-goto-page').addClass('active').append(
+						$('<a>').attr(
+							'href','#').append(
+								i));
+				$link_item = $new_item.children('a').first();
+				$link_item.on('click', function(e) {
+					e.preventDefault();
+				});	
+			}
+			else {
+				$new_item = $('<li>').addClass('tags-goto-page').append(
+					$('<a>').attr(
+						'href','#').append(
+							i));
+				$link_item = $new_item.children('a').first();
+				$link_item.on('click', function() {
+					var id = $(this).text();
+					$.get('{{ rest_url_for(tag) }}', {'page': id}, null, 'json')
+						.done(function(data) {
+							load_json_tags(data, id);
+					});					
+					return false;
+				});
+			}
+			$prev_li.after($new_item);
+			$prev_li = $new_item;
+			// Update next and prev
+			var $all_tags_prev = $('#all-tags-prev');
+			var $all_tags_next = $('#all-tags-next');
+			if (num_page === 1) {
+				$all_tags_prev.toggleClass('disabled', true);
+				$all_tags_prev.click(function(e) {
+					e.preventDefault();
+				});
+			}
+			else {
+				$all_tags_prev.toggleClass('disabled', false);
+				$all_tags_prev.click(function() {
+					prev_page();
+				});
+			}
+			if (num_page === num_pages) {
+				$all_tags_next.toggleClass('disabled', true);
+				$all_tags_next.click(function(e) {
+					e.preventDefault();
+				});	
+			}
+			else {
+				$all_tags_next.toggleClass('disabled', false);
+				$all_tags_next.click(function() {
+					next_page();
+				});
+			}
+		}
+	}
 	$(document).ready(function() {
-		$("#next-button").click(function() {
-			var nextid = parseInt($("#next-id").val(), 10);
-			$.ajax({
-				url: '{{ rest_url_for(tag) }}' + "/" + nextid,
-				dateType: 'json',
-				error: function() {
-					alert('No more tags');
-				},
-				success: function(data) {
-					var new_row = $("<tr><td>" + data.id + "</td><td>" + data.name + "</td></tr>");
-					$("#tags").append(new_row);
-					$("#next-id").val(nextid+1);
-				}
-			});
+		$.ajax({
+			url: '{{ rest_url_for(tag) }}',
+			dataType: 'json',
+			error: function() {
+				alert('No tags could be loaded!');
+			},
+			success: function(data) {
+				load_json_tags(data,1);
+			}
 		});
-		$("#all-button").click(function() {
-			$.ajax({
-				url: '{{ rest_url_for(tag) }}',
-				dataType: 'json',
-				success: function(data) {
-					var all_tags, new_row, i;
-					all_tags = data.objects;
-					for(i=0; i<data.objects.length; ++i) {
-						new_row = $("<tr><td>" + data.objects[i].id + "</td><td>" + data.objects[i].name + "</td></tr>");
-						$("#people-with-y").append(new_row);
-					}
-				}
-			});
+	});
+	$('#add-button').click(function() {
+		var val = $('#add-tag-text').val();
+		if (val === '') {
+			alert('Please input tag name first!');
+			return false;
+		}
+		$.ajax({
+			url: '{{ rest_url_for(tag) }}',
+			method: 'POST',
+			dataType: 'json',
+			contentType: 'application/json',
+			data: JSON.stringify({name: val}),
+		}).done(function(msg) {
+			alert("Tag " + val + " saved: " + msg);
+
+		}).fail(function(msg) {
+			alert('Insert failed: ' + msg);
 		});
+	});
+	function next_page() {
+		alert('next page');
+		return false;
+	}
+	function prev_page() {
+		alert('prev page');
+		return false;
+	}
+	$("#all-tags-pagination li a").click(function() {
+		var id = $(this).attr('id');
+		if (id === 'all-tags-prev') {
+			next_page();
+		}
+		else if (id === 'all-tags-next') {
+			prev_page();
+		}
+		return false;
 	});
 }());
 
@@ -45,21 +142,28 @@
 {% block contentbody %}
 	<h2>AJAX Test with REST and jQuery</h2>
 
-	<input type="button" id="next-button" value="Get next tag" class="btn btn-default btn-sm" />
-	<input type="hidden" id="next-id" value="0" />
-	<table id="tags" class="table table-striped table-condensed">
+	<div class="row">
+		<div class="col-sm-4">
+			<input type="text" id="add-tag-text" placeholder="tag name" class="form-control">
+		</div>
+		<div class="col-sm-2">
+			<input type="button" id="add-button" value="Add tag" class="btn btn-default" />
+		</div>
+	</div>
+
+	<table id="all-tags" class="table table-striped table-condensed">
 		<thead>
 			<tr><th>ID</th><th>Name</th></tr>
 		</thead>
 		<tbody></tbody>
 	</table>
-	<input type="button" id="all-button" value="Show the first 5 tags" class="btn btn-default btn-sm" />
-	<table id="tags-with-y" class="table table-striped table-condensed">
-		<thead>
-			<tr><th>ID</th><th>Name</th></tr>
-		</thead>
-		<tbody></tbody>
-	</table>
+
+	<nav class="text-center">
+		<ul class="pagination" id="all-tags-pagination">
+			<li><a href="#" id="all-tags-prev" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+			<li><a href="#" id="all-tags-next" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+		</ul>
+	</nav>
 
 {% endblock %}
 

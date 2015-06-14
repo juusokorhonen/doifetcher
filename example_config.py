@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division, unicode_literals, print_function)
 
 import os
 
@@ -28,7 +29,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'testing.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(Config.BASE_DIR, 'testing.db')
 
 class ProductionConfig(Config):
     SECRET_KEY = "INSERT_PRODUCTION_SECRET_KEY_HERE"
